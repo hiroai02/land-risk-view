@@ -291,19 +291,7 @@
   .status-msg.loading { color: var(--sub); }
   .status-msg.ok { background: var(--chip-bg); color: var(--accent-dark); }
 
-  /* ---------- Empty state ---------- */
-  .empty-state {
-    text-align: center;
-    padding: 36px 20px;
-    color: var(--sub);
-    font-size: 0.88rem;
-  }
-  .empty-state .emoji { font-size: 2rem; margin-bottom: 8px; }
-
   /* ---------- Step 2: results ---------- */
-  #resultsSection { display: none; }
-  #resultsSection.show { display: block; }
-
   .tabs {
     display: flex;
     gap: 6px;
@@ -453,19 +441,14 @@
 
   <div class="guide-card" id="guideCard"></div>
 
-  <div class="step-label"><span class="num">1</span>住所を入力する</div>
+  <div class="step-label"><span class="num">1</span>住所を入力 または 地図をタップして場所を選ぶ</div>
   <div class="search-card">
     <div class="search-row">
       <input id="addressInput" type="text" placeholder="例: 東京都新宿区西新宿2-8-1" />
       <button id="searchBtn">確認する</button>
     </div>
-    <div class="hint">検討中の土地・物件の住所を入力してください。表示後、ピンがズレていたら地図をタップ/ドラッグで調整できます</div>
+    <div class="hint">住所が分からなくても大丈夫です。下の地図を直接動かして、気になる場所をタップするだけでも確認できます。</div>
     <div class="status-msg" id="status"></div>
-  </div>
-
-  <div id="emptyState" class="empty-state">
-    <div class="emoji">📍</div>
-    住所を入力すると、ここに地図とリスク情報が表示されます
   </div>
 
   <div id="resultsSection">
@@ -628,13 +611,7 @@
 
   async function movePin(lat, lng, opts) {
     opts = opts || {};
-    emptyState.style.display = 'none';
-    resultsSection.classList.add('show');
-    initMapIfNeeded();
-    buildTabs();
-    setHazardLayer(activeKey);
     if (opts.recenter) map.setView([lat, lng], 16);
-    setTimeout(() => map.invalidateSize(), 50);
 
     const provisionalLabel = `緯度${lat.toFixed(5)}, 経度${lng.toFixed(5)}`;
     if (opts.skipMarkerRecreate && marker) {
@@ -680,8 +657,6 @@
   const statusEl = document.getElementById('status');
   const input = document.getElementById('addressInput');
   const btn = document.getElementById('searchBtn');
-  const emptyState = document.getElementById('emptyState');
-  const resultsSection = document.getElementById('resultsSection');
 
   function setStatus(text, type) {
     statusEl.textContent = text;
@@ -704,11 +679,6 @@
       const [lng, lat] = data[0].geometry.coordinates;
       const title = data[0].properties.title || q;
 
-      emptyState.style.display = 'none';
-      resultsSection.classList.add('show');
-      initMapIfNeeded();
-      buildTabs();
-      setHazardLayer(activeKey);
       map.setView([lat, lng], 16);
       placeDraggableMarker(lat, lng, title);
       setTimeout(() => map.invalidateSize(), 50);
@@ -929,6 +899,13 @@
   }
 
   renderGuideIntro();
+
+  // Show a usable, interactive map immediately (no address required to start).
+  initMapIfNeeded();
+  buildTabs();
+  setHazardLayer(activeKey);
+  setStatus('地図をタップ/ドラッグして場所を選ぶか、上で住所を入力してください。', '');
+  setTimeout(() => map.invalidateSize(), 50);
 </script>
 
 </body>
