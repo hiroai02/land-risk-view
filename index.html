@@ -292,6 +292,44 @@
   .status-msg.ok { background: var(--chip-bg); color: var(--accent-dark); }
 
   /* ---------- Step 2: results ---------- */
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+  .summary-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .summary-note { font-size: 0.78rem; color: var(--sub); margin-bottom: 10px; }
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid var(--border);
+  }
+  .summary-row:first-of-type { border-top: none; }
+  .summary-row .s-label { flex: 1; font-size: 0.88rem; }
+  .summary-chip {
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .summary-chip.hit { background: var(--warn-bg); color: var(--warn-ink); }
+  .summary-chip.clear { background: var(--chip-bg); color: var(--accent-dark); }
+  .summary-chip.pending { background: var(--bg); color: var(--sub); }
+  .summary-chip.err { background: var(--bg); color: var(--sub); }
+  .summary-row.clickable { cursor: pointer; }
+  .summary-row.clickable:hover .s-label { text-decoration: underline; }
+
   .tabs {
     display: flex;
     gap: 6px;
@@ -454,6 +492,8 @@
   <div id="resultsSection">
     <div class="step-label"><span class="num">2</span>リスクを確認する</div>
 
+    <div class="summary-card" id="summaryCard"></div>
+
     <div class="tabs" id="tabs"></div>
 
     <div id="map"></div>
@@ -542,6 +582,113 @@
     }
   };
 
+  // ---------- Risk summary table: sample each hazard tile at the exact point ----------
+  // We do NOT try to classify the depth/severity from pixel color (no verified RGB->rank
+  // table for every layer, see GAUGE_DATA comments above) - only whether the official
+  // tile has ANY non-transparent pixel at this exact point (a zone is indicated at all).
+  const SUMMARY_ZOOM = 17;
+
+  function lonLatToTilePixel(lat, lon, zoom) {
+    const latRad = lat * Math.PI / 180;
+    const n = Math.pow(2, zoom);
+    const x = (lon + 180) / 360 * n;
+    const y = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
+    const tileX = Math.floor(x);
+    const tileY = Math.floor(y);
+    return {
+      tileX, tileY,
+      px: Math.floor((x - tileX) * 256),
+      py: Math.floor((y - tileY) * 256)
+    };
+  }
+
+  async function sampleHazardTile(hazardId, lat, lon) {
+    const { tileX, tileY, px, py } = lonLatToTilePixel(lat, lon, SUMMARY_ZOOM);
+    const url = `https://disaportaldata.gsi.go.jp/raster/${hazardId}/${SUMMARY_ZOOM}/${tileX}/${tileY}.png`;
+    // Check the HTTP status first: many hazard layers (esp. sediment-disaster ones)
+    // simply have no tile at all outside their designated zones. A 404 there means
+    // "no zone at this point", not "couldn't check" - only a genuine network/server
+    // error should surface as 'error'.
+    let res;
+    try {
+      res = await fetch(url);
+    } catch (e) {
+      return 'error';
+    }
+    if (res.status === 404) return 'clear';
+    if (!res.ok) return 'error';
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timer = setTimeout(() => resolve('error'), 8000);
+      img.onload = () => {
+        clearTimeout(timer);
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 256;
+          canvas.height = img.naturalHeight || 256;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const alpha = ctx.getImageData(px, py, 1, 1).data[3];
+          resolve(alpha > 0 ? 'hit' : 'clear');
+        } catch (e) {
+          resolve('error');
+        }
+      };
+      img.onerror = () => { clearTimeout(timer); resolve('error'); };
+      img.crossOrigin = 'anonymous';
+      img.src = url;
+    });
+  }
+
+  const SUMMARY_LABELS = {
+    flood:     { label: '🌊 洪水浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' },
+    dosekiryu: { label: '⛰️ 土石流警戒区域', hit: '⚠️ 区域指定あり', clear: '指定なし(データ上)' },
+    jisuberi:  { label: '🪨 地すべり警戒区域', hit: '⚠️ 区域指定あり', clear: '指定なし(データ上)' },
+    tsunami:   { label: '🌐 津波浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' },
+    hightide:  { label: '🌀 高潮浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' }
+  };
+
+  let summaryRequestId = 0;
+  async function runRiskSummary(lat, lng) {
+    const requestId = ++summaryRequestId;
+    const summaryEl = document.getElementById('summaryCard');
+    summaryEl.innerHTML = `
+      <div class="summary-title">🔎 この地点のハザード一覧</div>
+      <div class="summary-note">住所検索の1回で、5種類の公式ハザード指定の有無をまとめて確認できます(確認中…)。</div>
+      ${HAZARD_LAYERS.map(l => `
+        <div class="summary-row" data-key="${l.key}">
+          <div class="s-label">${SUMMARY_LABELS[l.key].label}</div>
+          <span class="summary-chip pending">確認中…</span>
+        </div>`).join('')}
+    `;
+    wireSummaryRowClicks();
+
+    const results = await Promise.all(HAZARD_LAYERS.map(l => sampleHazardTile(l.id, lat, lng).then(status => ({ key: l.key, status }))));
+    if (requestId !== summaryRequestId) return; // a newer location was picked meanwhile
+
+    results.forEach(r => {
+      const row = summaryEl.querySelector(`.summary-row[data-key="${r.key}"] .summary-chip`);
+      if (!row) return;
+      const labels = SUMMARY_LABELS[r.key];
+      if (r.status === 'hit') { row.textContent = labels.hit; row.className = 'summary-chip hit'; }
+      else if (r.status === 'clear') { row.textContent = labels.clear; row.className = 'summary-chip clear'; }
+      else { row.textContent = '確認できず'; row.className = 'summary-chip err'; }
+    });
+    const note = summaryEl.querySelector('.summary-note');
+    if (note) note.textContent = '色の濃淡や深さのランクまではここでは判定していません。詳細は下の地図でタブを切り替えて確認してください。「想定なし」はデータ上そう見える、という意味で、リスクが無いことの保証ではありません。';
+  }
+
+  function wireSummaryRowClicks() {
+    document.querySelectorAll('.summary-row').forEach(row => {
+      row.classList.add('clickable');
+      row.onclick = () => {
+        const key = row.dataset.key;
+        setHazardLayer(key);
+        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+    });
+  }
+
   function renderGauge(key) {
     const g = GAUGE_DATA[key];
     const gaugeEl = document.getElementById('gaugeCard');
@@ -626,6 +773,7 @@
     if (marker) marker.bindPopup(finalLabel);
     setStatus(`表示中: ${finalLabel}(ピンをドラッグ、または地図をタップして場所を調整できます)`, 'ok');
     maybeHighlightChecklist();
+    runRiskSummary(lat, lng);
   }
 
   function setHazardLayer(key) {
@@ -685,6 +833,7 @@
 
       setStatus(`表示中: ${title}(ズレている場合はピンをドラッグ、または地図をタップして調整できます)`, 'ok');
       maybeHighlightChecklist();
+      runRiskSummary(lat, lng);
     } catch (e) {
       setStatus('エラーが発生しました。時間をおいて再度お試しください。', 'error');
     } finally {
