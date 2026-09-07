@@ -323,7 +323,7 @@
       <input id="addressInput" type="text" placeholder="例: 東京都新宿区西新宿2-8-1" />
       <button id="searchBtn">確認する</button>
     </div>
-    <div class="hint">検討中の土地・物件の住所を入力してください</div>
+    <div class="hint">検討中の土地・物件の住所を入力してください。表示後、ピンがズレていたら地図をタップ/ドラッグで調整できます</div>
     <div class="status-msg" id="status"></div>
   </div>
 
@@ -453,6 +453,52 @@
       attribution: '地図: 国土地理院',
       maxZoom: 18
     }).addTo(map);
+    map.on('click', (e) => movePin(e.latlng.lat, e.latlng.lng, { recenter: false }));
+  }
+
+  async function reverseGeocodeLabel(lat, lng) {
+    try {
+      const res = await fetch(`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const name = data && data.results && data.results.lv01Nm;
+      return name || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function placeDraggableMarker(lat, lng, label) {
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map).bindPopup(label).openPopup();
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      movePin(pos.lat, pos.lng, { recenter: false, skipMarkerRecreate: true });
+    });
+  }
+
+  async function movePin(lat, lng, opts) {
+    opts = opts || {};
+    emptyState.style.display = 'none';
+    resultsSection.classList.add('show');
+    initMapIfNeeded();
+    buildTabs();
+    setHazardLayer(activeKey);
+    if (opts.recenter) map.setView([lat, lng], 16);
+    setTimeout(() => map.invalidateSize(), 50);
+
+    const provisionalLabel = `緯度${lat.toFixed(5)}, 経度${lng.toFixed(5)}`;
+    if (opts.skipMarkerRecreate && marker) {
+      marker.bindPopup(provisionalLabel);
+    } else {
+      placeDraggableMarker(lat, lng, provisionalLabel);
+    }
+    setStatus('この地点を確認中…', 'loading');
+
+    const label = await reverseGeocodeLabel(lat, lng);
+    const finalLabel = label || provisionalLabel;
+    if (marker) marker.bindPopup(finalLabel);
+    setStatus(`表示中: ${finalLabel}(ピンをドラッグ、または地図をタップして場所を調整できます)`, 'ok');
   }
 
   function setHazardLayer(key) {
@@ -513,13 +559,11 @@
       initMapIfNeeded();
       buildTabs();
       setHazardLayer(activeKey);
-
       map.setView([lat, lng], 16);
-      if (marker) map.removeLayer(marker);
-      marker = L.marker([lat, lng]).addTo(map).bindPopup(title).openPopup();
+      placeDraggableMarker(lat, lng, title);
       setTimeout(() => map.invalidateSize(), 50);
 
-      setStatus(`表示中: ${title}`, 'ok');
+      setStatus(`表示中: ${title}(ズレている場合はピンをドラッグ、または地図をタップして調整できます)`, 'ok');
     } catch (e) {
       setStatus('エラーが発生しました。時間をおいて再度お試しください。', 'error');
     } finally {
