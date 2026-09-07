@@ -14,47 +14,50 @@
 <meta name="twitter:title" content="土地リスクビュー">
 <meta name="twitter:description" content="住所を入れるだけで、その土地の防災ハザードを国の公式データで無料確認。登録不要。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%BE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <style>
   :root {
-    --bg: #f6f4ee;
-    --ink: #1c2420;
-    --sub: #63706a;
-    --accent: #1f6f5c;
-    --accent-dark: #16513f;
+    --bg: #fdf6f0;
+    --ink: #4a3c34;
+    --sub: #8f7d71;
+    --accent: #ef9c7f;
+    --accent-dark: #a8503a;
     --accent-ink: #ffffff;
     --card: #ffffff;
-    --border: #e4e0d3;
+    --border: #f1e2d3;
     --warn-bg: #fff5e3;
     --warn-border: #ecc26b;
     --warn-ink: #5c4310;
-    --chip-bg: #edf3ef;
-    --shadow: 0 1px 2px rgba(28,36,32,.04), 0 6px 20px rgba(28,36,32,.06);
+    --chip-bg: #fbe4da;
+    --shadow: 0 2px 6px rgba(180,120,90,.10), 0 10px 24px rgba(180,120,90,.13);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #12160f;
-      --ink: #eef1ea;
-      --sub: #98a49b;
-      --card: #1b211a;
-      --border: #303a30;
-      --warn-bg: #2a2410;
+      --bg: #2b2320;
+      --ink: #f6ece3;
+      --sub: #c2ac9e;
+      --card: #362c27;
+      --border: #4a3c33;
+      --warn-bg: #3c3120;
       --warn-border: #6b5a1f;
-      --warn-ink: #f0d99a;
-      --chip-bg: #1e2a22;
+      --warn-ink: #edc17c;
+      --chip-bg: #4a372e;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #12160f;
-    --ink: #eef1ea;
-    --sub: #98a49b;
-    --card: #1b211a;
-    --border: #303a30;
-    --warn-bg: #2a2410;
+    --bg: #2b2320;
+    --ink: #f6ece3;
+    --sub: #c2ac9e;
+    --card: #362c27;
+    --border: #4a3c33;
+    --warn-bg: #3c3120;
     --warn-border: #6b5a1f;
-    --warn-ink: #f0d99a;
-    --chip-bg: #1e2a22;
+    --warn-ink: #edc17c;
+    --chip-bg: #4a372e;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
   }
 
@@ -63,7 +66,7 @@
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
@@ -93,6 +96,37 @@
     font-size: 0.95rem;
     margin: 0 auto;
     max-width: 46ch;
+  }
+  .host-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 3px solid var(--card);
+    box-shadow: var(--shadow);
+    object-fit: cover;
+    margin-bottom: 8px;
+  }
+  .host-avatar.sm {
+    width: 34px; height: 34px;
+    border-width: 2px;
+    flex: none;
+  }
+  .host-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .host-bubble {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px 14px 14px 14px;
+    padding: 10px 13px;
+  }
+  .host-name {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin-bottom: 3px;
   }
 
   /* ---------- Step 1: search ---------- */
@@ -410,9 +444,11 @@
 <div class="wrap">
 
   <header>
+    <img class="host-avatar" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="64" height="64" loading="lazy">
+    <br>
     <span class="badge">🌱 無料・登録不要</span>
     <h1>🗾 土地リスクビュー</h1>
-    <p class="lead">住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
+    <p class="lead">住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。案内役は「みさき」です。</p>
   </header>
 
   <div class="guide-card" id="guideCard"></div>
@@ -453,6 +489,19 @@
         <li><span class="ico">🏛️</span>自治体の窓口で、用途地域・建ぺい率・容積率・建築条件を確認したか</li>
         <li><span class="ico">🌦️</span>晴天時だけでなく、雨天時や別の時間帯にも現地を見たか</li>
       </ul>
+    </div>
+
+    <div class="guide-card" id="handoffCard">
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>引っ越しが決まったら、網戸・鍵・カーテンレールなど「入居後によくある困りごと」をサイズ・仕様で比較した記事もまとめています。良かったら覗いてみてください。</div>
+        </div>
+      </div>
+      <div class="guide-cta-row" style="margin-top:10px;">
+        <a class="guide-start-btn" style="text-decoration:none; display:inline-block;" href="https://hiroai02.github.io/" target="_blank" rel="noopener">くらしの比較ノートを見る</a>
+      </div>
     </div>
   </div>
 
@@ -677,8 +726,9 @@
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchAddress(); });
 
   // ---------- Guided consultation (branching questions, not a real AI chat) ----------
-  const GUIDE_QUESTIONS = [
+  const GUIDE_STEPS = [
     {
+      id: 'experience',
       q: '土地・物件探しは初めてですか?',
       options: [
         { label: 'はい、初めてです', tag: 'beginner' },
@@ -686,6 +736,7 @@
       ]
     },
     {
+      id: 'stage',
       q: '今の状況に近いのは?',
       options: [
         { label: 'まだ何も決まっていない', tag: 'early' },
@@ -694,6 +745,16 @@
       ]
     },
     {
+      id: 'housing',
+      q: '検討しているのは?',
+      options: [
+        { label: '新築(土地から探す)', tag: 'newbuild' },
+        { label: '中古の一戸建て', tag: 'used' },
+        { label: 'まだ決めていない', tag: 'undecided' }
+      ]
+    },
+    {
+      id: 'concern',
       q: '一番気になるのは?',
       options: [
         { label: '総額・お金のこと', tag: 'money' },
@@ -701,57 +762,96 @@
         { label: '生活環境(駅・買い物等)', tag: 'life' },
         { label: '何から見ればいいか分からない', tag: 'unsure' }
       ]
+    },
+    {
+      id: 'hazardDetail',
+      when: (a) => a.concern === 'hazard',
+      q: '災害の中でも、特に気になるのは?',
+      options: [
+        { label: '洪水・浸水', tag: 'flood' },
+        { label: '土砂災害(がけ崩れ等)', tag: 'dosekiryu' },
+        { label: '津波・高潮', tag: 'tsunami' },
+        { label: 'わからないので全部見たい', tag: 'all' }
+      ]
     }
   ];
 
   const guideCard = document.getElementById('guideCard');
-  let guideAnswers = [];
-  let guideStep = -1; // -1 = intro, 0..2 = questions, 3 = result
+  let guideAnswers = {};
+  let guideIdx = -1; // -1 = intro, index into GUIDE_STEPS, or 'result'
 
-  function guideProgressHtml(current) {
-    return `<div class="guide-progress">${GUIDE_QUESTIONS.map((_, i) =>
-      `<div class="dot${i < current ? ' done' : ''}"></div>`).join('')}</div>`;
+  function applicableSteps() {
+    return GUIDE_STEPS.filter(s => !s.when || s.when(guideAnswers));
+  }
+  function nextApplicableIndex(fromIdx) {
+    let i = fromIdx + 1;
+    while (i < GUIDE_STEPS.length && GUIDE_STEPS[i].when && !GUIDE_STEPS[i].when(guideAnswers)) i++;
+    return i;
+  }
+  function prevApplicableIndex(fromIdx) {
+    let i = fromIdx - 1;
+    while (i >= 0 && GUIDE_STEPS[i].when && !GUIDE_STEPS[i].when(guideAnswers)) i--;
+    return i;
+  }
+
+  function guideProgressHtml(step) {
+    const steps = applicableSteps();
+    const pos = steps.findIndex(s => s.id === step.id);
+    return `<div class="guide-progress">${steps.map((_, i) =>
+      `<div class="dot${i < pos ? ' done' : ''}"></div>`).join('')}</div>`;
   }
 
   function renderGuideIntro() {
     guideCard.innerHTML = `
-      <div class="guide-label">🧭 何を確認すればいいか迷ったら</div>
-      <div class="guide-sub">3つだけ質問に答えると、このページの見方を案内します(実際のAIとの対話ではなく、回答に応じて案内文が変わる簡易ガイドです)。</div>
-      <div class="guide-cta-row">
-        <button class="guide-start-btn" id="guideStartBtn">ガイドに相談する(30秒)</button>
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>何を確認すればいいか迷ったら、いくつか質問させてください。回答に応じて案内文が変わる簡易ガイドです(実際のAIとの対話ではありません)。</div>
+        </div>
+      </div>
+      <div class="guide-cta-row" style="margin-top:12px;">
+        <button class="guide-start-btn" id="guideStartBtn">ガイドに相談する(1分)</button>
         <button class="guide-skip" id="guideSkipBtn">スキップして地図へ ↓</button>
       </div>
     `;
-    document.getElementById('guideStartBtn').addEventListener('click', () => { guideStep = 0; renderGuideQuestion(); });
+    document.getElementById('guideStartBtn').addEventListener('click', () => { guideIdx = nextApplicableIndex(-1); renderGuideQuestion(); });
     document.getElementById('guideSkipBtn').addEventListener('click', () => {
       document.getElementById('addressInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
 
   function renderGuideQuestion() {
-    const step = GUIDE_QUESTIONS[guideStep];
+    const step = GUIDE_STEPS[guideIdx];
+    const isFirst = prevApplicableIndex(guideIdx) < 0;
     guideCard.innerHTML = `
-      ${guideProgressHtml(guideStep)}
-      <div class="guide-question">${step.q}</div>
-      <div class="guide-options">
+      ${guideProgressHtml(step)}
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>${step.q}</div>
+        </div>
+      </div>
+      <div class="guide-options" style="margin-top:10px;">
         ${step.options.map((o, i) => `<button class="guide-opt-btn" data-i="${i}">${o.label}</button>`).join('')}
       </div>
-      ${guideStep > 0 ? '<button class="guide-back" id="guideBackBtn">戻る</button>' : ''}
+      ${!isFirst ? '<button class="guide-back" id="guideBackBtn">戻る</button>' : ''}
     `;
     guideCard.querySelectorAll('.guide-opt-btn').forEach(b => {
       b.addEventListener('click', () => {
-        guideAnswers[guideStep] = step.options[Number(b.dataset.i)].tag;
-        guideStep++;
-        if (guideStep < GUIDE_QUESTIONS.length) renderGuideQuestion();
+        guideAnswers[step.id] = step.options[Number(b.dataset.i)].tag;
+        const ni = nextApplicableIndex(guideIdx);
+        if (ni < GUIDE_STEPS.length) { guideIdx = ni; renderGuideQuestion(); }
         else renderGuideResult();
       });
     });
     const backBtn = document.getElementById('guideBackBtn');
-    if (backBtn) backBtn.addEventListener('click', () => { guideStep--; renderGuideQuestion(); });
+    if (backBtn) backBtn.addEventListener('click', () => { guideIdx = prevApplicableIndex(guideIdx); renderGuideQuestion(); });
   }
 
   function renderGuideResult() {
-    const [experience, stage, concern] = guideAnswers;
+    const { experience, stage, housing, concern, hazardDetail } = guideAnswers;
 
     let msg = experience === 'beginner'
       ? '初めての土地・物件探しですね。'
@@ -765,18 +865,40 @@
       msg += ' 契約直前とのことなので、下で住所を確認したら、必ず「あわせて確認したいこと」のチェックリストと自治体窓口への確認まで済ませてから進めてください。';
     }
 
+    if (housing === 'used') {
+      msg += ' 中古一戸建てだと、このツールが見られるのは土地(周辺のハザード)までです。建物自体の劣化や耐震性は別途インスペクション(建物状況調査)での確認をおすすめします。';
+    } else if (housing === 'newbuild') {
+      msg += ' 新築で土地から探すなら、着工前に用途地域・建築条件・地盤も自治体や施工会社に確認しておくと安心です。';
+    }
+
     if (concern === 'money') {
       msg += ' お金の面が気になるなら、土地価格だけでなく諸費用込みの総額で比較する視点がチェックリストにあります。';
     } else if (concern === 'life') {
       msg += ' 生活環境は地図だけでは分からないので、晴天時・雨天時どちらも現地を見ることをチェックリストで触れています。';
     } else if (concern === 'unsure') {
       msg += ' 何から見ればいいか迷う場合は、まず下のハザード地図→次にチェックリストの順に見るのがおすすめです。';
+    } else if (concern === 'hazard') {
+      const hazardMsgMap = {
+        flood: '洪水・浸水が気になるとのことなので、地図は「🌊 洪水」タブを開いた状態にしておきますね。',
+        dosekiryu: '土砂災害が気になるとのことなので、地図は「⛰️ 土石流」タブを開いた状態にしておきますね。地すべりの区域も別タブで確認できます。',
+        tsunami: '津波・高潮が気になるとのことなので、地図は「🌐 津波」タブを開いた状態にしておきますね。',
+        all: '災害の種類が絞れないとのことなので、洪水タブから順に、上のタブを1つずつ切り替えて全部確認してみてください。'
+      };
+      msg += ' ' + (hazardMsgMap[hazardDetail] || '');
+      if (hazardDetail && hazardDetail !== 'all' && HAZARD_LAYERS.some(l => l.key === hazardDetail)) {
+        activeKey = hazardDetail;
+      }
     }
 
     guideCard.innerHTML = `
-      <div class="guide-label">🧭 ご案内</div>
-      <div class="guide-result-msg">${msg}</div>
-      <div class="guide-cta-row">
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>${msg}</div>
+        </div>
+      </div>
+      <div class="guide-cta-row" style="margin-top:12px;">
         <button class="guide-start-btn" id="guideGoBtn">住所を入力する ↓</button>
         <button class="guide-skip" id="guideRestartBtn">もう一度質問に答える</button>
       </div>
@@ -789,7 +911,7 @@
       }
     });
     document.getElementById('guideRestartBtn').addEventListener('click', () => {
-      guideAnswers = []; guideStep = 0; renderGuideQuestion();
+      guideAnswers = {}; guideIdx = nextApplicableIndex(-1); renderGuideQuestion();
     });
   }
 
