@@ -147,6 +147,104 @@
   .search-row button:hover { background: var(--accent-dark); }
   .search-row button:disabled { opacity: 0.55; cursor: default; }
   .hint { font-size: 0.78rem; color: var(--sub); margin-top: 8px; }
+
+  /* ---------- Guide (branching consultation) ---------- */
+  .guide-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin: 18px 0;
+  }
+  .guide-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin-bottom: 6px;
+  }
+  .guide-sub { font-size: 0.85rem; color: var(--sub); margin-bottom: 12px; }
+  .guide-cta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .guide-start-btn {
+    padding: 11px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .guide-skip {
+    font-size: 0.82rem;
+    color: var(--sub);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .guide-progress {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  .guide-progress .dot {
+    width: 20px; height: 4px;
+    border-radius: 999px;
+    background: var(--border);
+  }
+  .guide-progress .dot.done { background: var(--accent); }
+  .guide-question {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .guide-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .guide-opt-btn {
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 0.87rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .guide-opt-btn:hover { border-color: var(--accent); }
+  .guide-back {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.78rem;
+    color: var(--sub);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+  .guide-result-msg {
+    font-size: 0.9rem;
+    background: var(--chip-bg);
+    color: var(--accent-dark);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .highlight-pulse {
+    animation: pulseHi 1.6s ease 2;
+  }
+  @keyframes pulseHi {
+    0%, 100% { box-shadow: var(--shadow); }
+    50% { box-shadow: 0 0 0 3px var(--accent); }
+  }
   .status-msg {
     font-size: 0.85rem;
     margin-top: 10px;
@@ -316,6 +414,8 @@
     <h1>🗾 土地リスクビュー</h1>
     <p class="lead">住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
   </header>
+
+  <div class="guide-card" id="guideCard"></div>
 
   <div class="step-label"><span class="num">1</span>住所を入力する</div>
   <div class="search-card">
@@ -499,6 +599,7 @@
     const finalLabel = label || provisionalLabel;
     if (marker) marker.bindPopup(finalLabel);
     setStatus(`表示中: ${finalLabel}(ピンをドラッグ、または地図をタップして場所を調整できます)`, 'ok');
+    maybeHighlightChecklist();
   }
 
   function setHazardLayer(key) {
@@ -564,6 +665,7 @@
       setTimeout(() => map.invalidateSize(), 50);
 
       setStatus(`表示中: ${title}(ズレている場合はピンをドラッグ、または地図をタップして調整できます)`, 'ok');
+      maybeHighlightChecklist();
     } catch (e) {
       setStatus('エラーが発生しました。時間をおいて再度お試しください。', 'error');
     } finally {
@@ -573,6 +675,138 @@
 
   btn.addEventListener('click', searchAddress);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchAddress(); });
+
+  // ---------- Guided consultation (branching questions, not a real AI chat) ----------
+  const GUIDE_QUESTIONS = [
+    {
+      q: '土地・物件探しは初めてですか?',
+      options: [
+        { label: 'はい、初めてです', tag: 'beginner' },
+        { label: '何度か経験があります', tag: 'experienced' }
+      ]
+    },
+    {
+      q: '今の状況に近いのは?',
+      options: [
+        { label: 'まだ何も決まっていない', tag: 'early' },
+        { label: '気になる土地・物件が1つある', tag: 'candidate' },
+        { label: '契約直前で最終確認したい', tag: 'final' }
+      ]
+    },
+    {
+      q: '一番気になるのは?',
+      options: [
+        { label: '総額・お金のこと', tag: 'money' },
+        { label: '災害リスク', tag: 'hazard' },
+        { label: '生活環境(駅・買い物等)', tag: 'life' },
+        { label: '何から見ればいいか分からない', tag: 'unsure' }
+      ]
+    }
+  ];
+
+  const guideCard = document.getElementById('guideCard');
+  let guideAnswers = [];
+  let guideStep = -1; // -1 = intro, 0..2 = questions, 3 = result
+
+  function guideProgressHtml(current) {
+    return `<div class="guide-progress">${GUIDE_QUESTIONS.map((_, i) =>
+      `<div class="dot${i < current ? ' done' : ''}"></div>`).join('')}</div>`;
+  }
+
+  function renderGuideIntro() {
+    guideCard.innerHTML = `
+      <div class="guide-label">🧭 何を確認すればいいか迷ったら</div>
+      <div class="guide-sub">3つだけ質問に答えると、このページの見方を案内します(実際のAIとの対話ではなく、回答に応じて案内文が変わる簡易ガイドです)。</div>
+      <div class="guide-cta-row">
+        <button class="guide-start-btn" id="guideStartBtn">ガイドに相談する(30秒)</button>
+        <button class="guide-skip" id="guideSkipBtn">スキップして地図へ ↓</button>
+      </div>
+    `;
+    document.getElementById('guideStartBtn').addEventListener('click', () => { guideStep = 0; renderGuideQuestion(); });
+    document.getElementById('guideSkipBtn').addEventListener('click', () => {
+      document.getElementById('addressInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  function renderGuideQuestion() {
+    const step = GUIDE_QUESTIONS[guideStep];
+    guideCard.innerHTML = `
+      ${guideProgressHtml(guideStep)}
+      <div class="guide-question">${step.q}</div>
+      <div class="guide-options">
+        ${step.options.map((o, i) => `<button class="guide-opt-btn" data-i="${i}">${o.label}</button>`).join('')}
+      </div>
+      ${guideStep > 0 ? '<button class="guide-back" id="guideBackBtn">戻る</button>' : ''}
+    `;
+    guideCard.querySelectorAll('.guide-opt-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        guideAnswers[guideStep] = step.options[Number(b.dataset.i)].tag;
+        guideStep++;
+        if (guideStep < GUIDE_QUESTIONS.length) renderGuideQuestion();
+        else renderGuideResult();
+      });
+    });
+    const backBtn = document.getElementById('guideBackBtn');
+    if (backBtn) backBtn.addEventListener('click', () => { guideStep--; renderGuideQuestion(); });
+  }
+
+  function renderGuideResult() {
+    const [experience, stage, concern] = guideAnswers;
+
+    let msg = experience === 'beginner'
+      ? '初めての土地・物件探しですね。'
+      : '経験がおありなんですね、要点だけサクッと確認しましょう。';
+
+    if (stage === 'early') {
+      msg += ' 候補がまだなら、気になるエリアが出てきた時点でこのページに住所を入れてみてください。ハザードだけでも先に知っておくと、その後の比較がラクになります。';
+    } else if (stage === 'candidate') {
+      msg += ' 下に候補の住所を入力してください。地図が出たら、下のチェックリストにも契約前に目を通しておくのがおすすめです。';
+    } else {
+      msg += ' 契約直前とのことなので、下で住所を確認したら、必ず「あわせて確認したいこと」のチェックリストと自治体窓口への確認まで済ませてから進めてください。';
+    }
+
+    if (concern === 'money') {
+      msg += ' お金の面が気になるなら、土地価格だけでなく諸費用込みの総額で比較する視点がチェックリストにあります。';
+    } else if (concern === 'life') {
+      msg += ' 生活環境は地図だけでは分からないので、晴天時・雨天時どちらも現地を見ることをチェックリストで触れています。';
+    } else if (concern === 'unsure') {
+      msg += ' 何から見ればいいか迷う場合は、まず下のハザード地図→次にチェックリストの順に見るのがおすすめです。';
+    }
+
+    guideCard.innerHTML = `
+      <div class="guide-label">🧭 ご案内</div>
+      <div class="guide-result-msg">${msg}</div>
+      <div class="guide-cta-row">
+        <button class="guide-start-btn" id="guideGoBtn">住所を入力する ↓</button>
+        <button class="guide-skip" id="guideRestartBtn">もう一度質問に答える</button>
+      </div>
+    `;
+    document.getElementById('guideGoBtn').addEventListener('click', () => {
+      document.getElementById('addressInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('addressInput').focus();
+      if (concern === 'money' || concern === 'life' || concern === 'unsure') {
+        pendingChecklistHighlight = true;
+      }
+    });
+    document.getElementById('guideRestartBtn').addEventListener('click', () => {
+      guideAnswers = []; guideStep = 0; renderGuideQuestion();
+    });
+  }
+
+  let pendingChecklistHighlight = false;
+  function maybeHighlightChecklist() {
+    if (!pendingChecklistHighlight) return;
+    pendingChecklistHighlight = false;
+    const el = document.querySelector('.checklist');
+    if (!el) return;
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('highlight-pulse');
+      setTimeout(() => el.classList.remove('highlight-pulse'), 3300);
+    }, 600);
+  }
+
+  renderGuideIntro();
 </script>
 
 </body>
