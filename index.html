@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>土地リスクビュー | 住所を入れるだけで防災ハザードを確認</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+  :root {
+    --bg: #f6f4ee;
+    --ink: #1c2420;
+    --sub: #63706a;
+    --accent: #1f6f5c;
+    --accent-dark: #16513f;
+    --accent-ink: #ffffff;
+    --card: #ffffff;
+    --border: #e4e0d3;
+    --warn-bg: #fff5e3;
+    --warn-border: #ecc26b;
+    --warn-ink: #5c4310;
+    --chip-bg: #edf3ef;
+    --shadow: 0 1px 2px rgba(28,36,32,.04), 0 6px 20px rgba(28,36,32,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12160f;
+      --ink: #eef1ea;
+      --sub: #98a49b;
+      --card: #1b211a;
+      --border: #303a30;
+      --warn-bg: #2a2410;
+      --warn-border: #6b5a1f;
+      --warn-ink: #f0d99a;
+      --chip-bg: #1e2a22;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12160f;
+    --ink: #eef1ea;
+    --sub: #98a49b;
+    --card: #1b211a;
+    --border: #303a30;
+    --warn-bg: #2a2410;
+    --warn-border: #6b5a1f;
+    --warn-ink: #f0d99a;
+    --chip-bg: #1e2a22;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 18px 40px; }
+
+  /* ---------- Header ---------- */
+  header { padding: 28px 0 18px; text-align: center; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--accent-dark);
+    background: var(--chip-bg);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .lead {
+    color: var(--sub);
+    font-size: 0.95rem;
+    margin: 0 auto;
+    max-width: 46ch;
+  }
+
+  /* ---------- Step 1: search ---------- */
+  .step-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin: 26px 0 10px;
+  }
+  .step-label .num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem;
+  }
+  .search-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .search-row { display: flex; gap: 8px; }
+  .search-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 14px;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .search-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search-row button {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s ease;
+  }
+  .search-row button:hover { background: var(--accent-dark); }
+  .search-row button:disabled { opacity: 0.55; cursor: default; }
+  .hint { font-size: 0.78rem; color: var(--sub); margin-top: 8px; }
+  .status-msg {
+    font-size: 0.85rem;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  .status-msg.show { display: block; }
+  .status-msg.error { background: var(--warn-bg); color: var(--warn-ink); }
+  .status-msg.loading { color: var(--sub); }
+  .status-msg.ok { background: var(--chip-bg); color: var(--accent-dark); }
+
+  /* ---------- Empty state ---------- */
+  .empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--sub);
+    font-size: 0.88rem;
+  }
+  .empty-state .emoji { font-size: 2rem; margin-bottom: 8px; }
+
+  /* ---------- Step 2: results ---------- */
+  #resultsSection { display: none; }
+  #resultsSection.show { display: block; }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 4px 2px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: none;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  #map {
+    height: 380px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .gauge-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px 12px;
+    margin-top: 10px;
+    box-shadow: var(--shadow);
+  }
+  .gauge-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+  }
+  .gauge-row:first-of-type { border-top: none; }
+  .gauge-swatch {
+    flex: none;
+    width: 30px; height: 22px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.08);
+  }
+  .gauge-range {
+    flex: none;
+    width: 84px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .gauge-note {
+    font-size: 0.8rem;
+    color: var(--sub);
+  }
+  .gauge-bar {
+    height: 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .gauge-footnote {
+    font-size: 0.76rem;
+    color: var(--sub);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .gauge-footnote a { color: var(--sub); }
+
+  .disclaimer {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    color: var(--warn-ink);
+    border-radius: 12px;
+    padding: 13px 15px;
+    font-size: 0.84rem;
+    margin-top: 16px;
+  }
+  .disclaimer strong { display: block; margin-bottom: 4px; }
+
+  .checklist {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 16px;
+    box-shadow: var(--shadow);
+  }
+  .checklist h2 { font-size: 0.98rem; margin: 0 0 10px; }
+  .checklist ul { list-style: none; margin: 0; padding: 0; }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.87rem;
+    margin-bottom: 10px;
+  }
+  .checklist li:last-child { margin-bottom: 0; }
+  .checklist li .ico { flex: none; font-size: 1rem; line-height: 1.4; }
+  .checklist a { color: var(--accent-dark); }
+
+  footer {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.74rem;
+    color: var(--sub);
+  }
+  footer a { color: var(--sub); }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 1.4rem; }
+    .search-row { flex-direction: column; }
+    .search-row button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <span class="badge">🌱 無料・登録不要</span>
+    <h1>🗾 土地リスクビュー</h1>
+    <p class="lead">住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
+  </header>
+
+  <div class="step-label"><span class="num">1</span>住所を入力する</div>
+  <div class="search-card">
+    <div class="search-row">
+      <input id="addressInput" type="text" placeholder="例: 東京都新宿区西新宿2-8-1" />
+      <button id="searchBtn">確認する</button>
+    </div>
+    <div class="hint">検討中の土地・物件の住所を入力してください</div>
+    <div class="status-msg" id="status"></div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    <div class="emoji">📍</div>
+    住所を入力すると、ここに地図とリスク情報が表示されます
+  </div>
+
+  <div id="resultsSection">
+    <div class="step-label"><span class="num">2</span>リスクを確認する</div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div id="map"></div>
+
+    <div class="gauge-card" id="gaugeCard"></div>
+
+    <div class="disclaimer">
+      <strong>⚠️ このツールについて</strong>
+      公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定は一切していません。実際の購入・建築の判断は、必ず自治体の窓口や不動産・建築の専門家に確認してください。
+    </div>
+
+    <div class="checklist">
+      <h2>あわせて確認したいこと</h2>
+      <ul>
+        <li><span class="ico">💰</span>土地価格だけでなく、造成・地盤改良・擁壁・水道引込などを含めた総額で比較できているか</li>
+        <li><span class="ico">🏛️</span>自治体の窓口で、用途地域・建ぺい率・容積率・建築条件を確認したか</li>
+        <li><span class="ico">🌦️</span>晴天時だけでなく、雨天時や別の時間帯にも現地を見たか</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    出典: 地図・ハザード情報 = 国土地理院・国土交通省「ハザードマップポータルサイト」オープンデータ(<a href="https://disaportal.gsi.go.jp/" target="_blank" rel="noopener">disaportal.gsi.go.jp</a>)。住所検索 = 国土地理院 住所検索API。個人が無料で試作した非公式ツールです。国土交通省・国土地理院とは関係なく、診断・保証は行いません。
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+  const HAZARD_LAYERS = [
+    { key: 'flood',     id: '01_flood_l2_shinsuishin_data', label: '🌊 洪水' },
+    { key: 'dosekiryu', id: '05_dosekiryukeikaikuiki',       label: '⛰️ 土石流' },
+    { key: 'jisuberi',  id: '05_jisuberikeikaikuiki',        label: '🪨 地すべり' },
+    { key: 'tsunami',   id: '04_tsunami_newlegend',          label: '🌐 津波' },
+    { key: 'hightide',  id: '03_hightide_l2_shinsuishin',    label: '🌀 高潮' }
+  ];
+
+  // 浸水深ランクは国土交通省「水害ハザードマップ作成の手引き」(重ねるハザードマップの凡例)に基づく実際の区分。
+  // 色は目安として作成したもので、公式サイトのピクセル色そのものと一致する保証はない(その旨を画面上にも明記)。
+  // 各ランクの「目安」説明は、浸水深と建物被害の一般的な対応関係としてよく説明される内容(一般的な目安であり、個別の建物構造等では変わりうる)。
+  const DEPTH_ROWS = [
+    { range: '0.5m未満',      color: '#fdf3c7', note: '大人のひざ丈より浅い程度の目安' },
+    { range: '0.5〜3.0m',     color: '#f6c453', note: '1階の床上まで浸水する程度の目安' },
+    { range: '3.0〜5.0m',     color: '#ef8a3d', note: '1階の天井付近〜2階が浸水する程度の目安' },
+    { range: '5.0〜10.0m',    color: '#d94f3c', note: '2階の天井付近まで浸水する程度の目安' },
+    { range: '10.0m以上',     color: '#7a1f3d', note: 'それ以上、家屋倒壊のおそれがあるレベルの目安' }
+  ];
+
+  const GAUGE_DATA = {
+    flood: {
+      type: 'depth',
+      rows: DEPTH_ROWS,
+      source: '出典: 国土交通省「水害ハザードマップ作成の手引き」の想定最大規模浸水深ランクに基づく区分(色は目安)。'
+    },
+    tsunami: {
+      type: 'depth',
+      rows: DEPTH_ROWS,
+      source: '出典: 津波浸水想定も洪水(想定最大規模)と同じ浸水深ランクの凡例が使われています(色は目安)。'
+    },
+    hightide: {
+      type: 'gradient',
+      source: '高潮浸水想定も色が濃いほど浸水が深いとされていますが、具体的な水深の区分値はこのツールでは未確認です。正確な値は公式サイトでご確認ください。'
+    },
+    dosekiryu: {
+      type: 'zone',
+      label: '土砂災害警戒区域(土石流)に指定',
+      source: '土砂災害警戒区域には「警戒区域(イエローゾーン)」と、より規制が強い「特別警戒区域(レッドゾーン)」があります。地図の色だけでは判別できない場合があるため、区域の種類は自治体に確認してください。'
+    },
+    jisuberi: {
+      type: 'zone',
+      label: '土砂災害警戒区域(地すべり)に指定',
+      source: '土砂災害警戒区域には「警戒区域(イエローゾーン)」と、より規制が強い「特別警戒区域(レッドゾーン)」があります。地図の色だけでは判別できない場合があるため、区域の種類は自治体に確認してください。'
+    }
+  };
+
+  function renderGauge(key) {
+    const g = GAUGE_DATA[key];
+    const gaugeEl = document.getElementById('gaugeCard');
+    if (!g) { gaugeEl.innerHTML = ''; return; }
+
+    let rowsHtml = '';
+    if (g.type === 'depth') {
+      rowsHtml = g.rows.map(r => `
+        <div class="gauge-row">
+          <div class="gauge-swatch" style="background:${r.color}"></div>
+          <div class="gauge-range">${r.range}</div>
+          <div class="gauge-note">${r.note}</div>
+        </div>`).join('');
+    } else if (g.type === 'zone') {
+      rowsHtml = `
+        <div class="gauge-row">
+          <div class="gauge-swatch" style="background:#f6c453"></div>
+          <div class="gauge-range" style="width:auto">${g.label}</div>
+        </div>`;
+    } else if (g.type === 'gradient') {
+      rowsHtml = `<div class="gauge-bar" style="background:linear-gradient(90deg, #fdf3c7, #f6c453, #ef8a3d, #d94f3c, #7a1f3d)"></div>
+        <div class="gauge-note">色が薄い(左)ほど浅い想定、濃い(右)ほど深い想定です。</div>`;
+    }
+
+    gaugeEl.innerHTML = `
+      <div class="gauge-title">🎚️ 色の見方</div>
+      ${rowsHtml}
+      <div class="gauge-footnote">${g.source} 色が付いていない場所が「リスク無し」を意味するとは限りません。正確な凡例は<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noopener">公式サイト</a>でご確認ください。</div>
+    `;
+  }
+
+  let map = null;
+  let marker = null;
+  let currentHazardLayer = null;
+  let activeKey = HAZARD_LAYERS[0].key;
+
+  function initMapIfNeeded() {
+    if (map) return;
+    map = L.map('map', { zoomControl: true }).setView([35.6812, 139.7671], 15);
+    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+      attribution: '地図: 国土地理院',
+      maxZoom: 18
+    }).addTo(map);
+  }
+
+  function setHazardLayer(key) {
+    activeKey = key;
+    const def = HAZARD_LAYERS.find(l => l.key === key);
+    if (currentHazardLayer) map.removeLayer(currentHazardLayer);
+    currentHazardLayer = L.tileLayer(`https://disaportaldata.gsi.go.jp/raster/${def.id}/{z}/{x}/{y}.png`, {
+      attribution: 'ハザード情報: 国土交通省',
+      maxZoom: 17,
+      opacity: 0.65
+    }).addTo(map);
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+    renderGauge(key);
+  }
+
+  function buildTabs() {
+    const tabsEl = document.getElementById('tabs');
+    tabsEl.innerHTML = '';
+    HAZARD_LAYERS.forEach(def => {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn' + (def.key === activeKey ? ' active' : '');
+      btn.textContent = def.label;
+      btn.dataset.key = def.key;
+      btn.addEventListener('click', () => setHazardLayer(def.key));
+      tabsEl.appendChild(btn);
+    });
+  }
+
+  const statusEl = document.getElementById('status');
+  const input = document.getElementById('addressInput');
+  const btn = document.getElementById('searchBtn');
+  const emptyState = document.getElementById('emptyState');
+  const resultsSection = document.getElementById('resultsSection');
+
+  function setStatus(text, type) {
+    statusEl.textContent = text;
+    statusEl.className = 'status-msg' + (text ? ' show' : '') + (type ? ' ' + type : '');
+  }
+
+  async function searchAddress() {
+    const q = input.value.trim();
+    if (!q) { setStatus('住所を入力してください。', 'error'); return; }
+    btn.disabled = true;
+    setStatus('検索中…', 'loading');
+    try {
+      const res = await fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(q));
+      if (!res.ok) throw new Error('検索に失敗しました');
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        setStatus('該当する住所が見つかりませんでした。表記を変えて再度お試しください。', 'error');
+        return;
+      }
+      const [lng, lat] = data[0].geometry.coordinates;
+      const title = data[0].properties.title || q;
+
+      emptyState.style.display = 'none';
+      resultsSection.classList.add('show');
+      initMapIfNeeded();
+      buildTabs();
+      setHazardLayer(activeKey);
+
+      map.setView([lat, lng], 16);
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([lat, lng]).addTo(map).bindPopup(title).openPopup();
+      setTimeout(() => map.invalidateSize(), 50);
+
+      setStatus(`表示中: ${title}`, 'ok');
+    } catch (e) {
+      setStatus('エラーが発生しました。時間をおいて再度お試しください。', 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', searchAddress);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchAddress(); });
+</script>
+
+</body>
+</html>
