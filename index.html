@@ -182,6 +182,60 @@
   .search-row button:disabled { opacity: 0.55; cursor: default; }
   .hint { font-size: 0.78rem; color: var(--sub); margin-top: 8px; }
 
+  /* ---------- Journey (home dashboard) ---------- */
+  .journey-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 4px;
+  }
+  .journey-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-dark); margin-bottom: 10px; }
+  .journey-steps {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .journey-steps::-webkit-scrollbar { display: none; }
+  .journey-step {
+    flex: none;
+    font-size: 0.74rem;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--sub);
+    white-space: nowrap;
+  }
+  .journey-step.current { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .journey-step.done { background: var(--chip-bg); color: var(--accent-dark); }
+  .journey-next {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 11px 13px;
+    font-size: 0.87rem;
+  }
+  .journey-next .ico { flex: none; }
+  .journey-unconfirmed {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--sub);
+  }
+  .journey-unconfirmed .chip {
+    display: inline-block;
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+
   /* ---------- Guide (branching consultation) ---------- */
   .guide-card {
     background: var(--card);
@@ -477,6 +531,8 @@
     <p class="lead">新築の土地選びから引っ越し後の暮らしまで、みさきと一緒に一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
   </header>
 
+  <div class="journey-card" id="journeyCard"></div>
+
   <div class="guide-card" id="guideCard"></div>
 
   <div class="step-label"><span class="num">1</span>住所を入力 または 地図をタップして場所を選ぶ</div>
@@ -536,6 +592,34 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
+  // ---------- 家づくりカルテ: ブラウザのlocalStorageだけで保存(アカウント・サーバー不要) ----------
+  // 同じ端末・同じブラウザなら次回訪問時も続きから。別端末には引き継がれない(正直な制約)。
+  const KARTE_KEY = 'ouchisagashi_karte_v1';
+
+  function loadKarte() {
+    try {
+      const raw = localStorage.getItem(KARTE_KEY);
+      if (!raw) throw new Error('empty');
+      const parsed = JSON.parse(raw);
+      return Object.assign({
+        guideAnswers: {}, guideCompleted: false,
+        lastLocation: null, riskSummary: null, unconfirmed: []
+      }, parsed);
+    } catch (e) {
+      return { guideAnswers: {}, guideCompleted: false, lastLocation: null, riskSummary: null, unconfirmed: [] };
+    }
+  }
+
+  function saveKarte() {
+    try {
+      localStorage.setItem(KARTE_KEY, JSON.stringify(karte));
+    } catch (e) {
+      // localStorageが使えない環境(プライベートブラウズ等)でも動作は継続する
+    }
+  }
+
+  const karte = loadKarte();
+
   const HAZARD_LAYERS = [
     { key: 'flood',     id: '01_flood_l2_shinsuishin_data', label: '🌊 洪水' },
     { key: 'dosekiryu', id: '05_dosekiryukeikaikuiki',       label: '⛰️ 土石流' },
@@ -666,7 +750,9 @@
     const results = await Promise.all(HAZARD_LAYERS.map(l => sampleHazardTile(l.id, lat, lng).then(status => ({ key: l.key, status }))));
     if (requestId !== summaryRequestId) return; // a newer location was picked meanwhile
 
+    const resultMap = {};
     results.forEach(r => {
+      resultMap[r.key] = r.status;
       const row = summaryEl.querySelector(`.summary-row[data-key="${r.key}"] .summary-chip`);
       if (!row) return;
       const labels = SUMMARY_LABELS[r.key];
@@ -676,6 +762,50 @@
     });
     const note = summaryEl.querySelector('.summary-note');
     if (note) note.textContent = '色の濃淡や深さのランクまではここでは判定していません。詳細は下の地図でタブを切り替えて確認してください。「想定なし」はデータ上そう見える、という意味で、リスクが無いことの保証ではありません。';
+
+    karte.lastLocation = { lat, lng };
+    karte.riskSummary = resultMap;
+    saveKarte();
+    renderJourney();
+  }
+
+  const JOURNEY_STAGES = ['土地', '予算', '住宅会社', 'ローン', '間取り', '見積', '契約', '建築', '引渡し', '入居'];
+
+  function journeyStageIndex() {
+    if (karte.guideAnswers.stage === 'final') return 6; // 契約
+    return 0; // 土地(early/candidate/未回答はすべてここ)
+  }
+
+  function renderJourney() {
+    const el = document.getElementById('journeyCard');
+    const idx = journeyStageIndex();
+    const stepsHtml = JOURNEY_STAGES.map((s, i) =>
+      `<div class="journey-step${i === idx ? ' current' : i < idx ? ' done' : ''}">${s}</div>`).join('');
+
+    let nextIco = '👉', nextText;
+    if (!karte.guideCompleted) {
+      nextText = 'まず下の質問に答えて、今の状況を整理しましょう。';
+    } else if (!karte.lastLocation) {
+      nextText = '気になる土地の住所を入力するか、下の地図をタップして確認しましょう。';
+    } else if (karte.riskSummary && Object.values(karte.riskSummary).some(v => v === 'hit')) {
+      nextIco = '⚠️';
+      nextText = '「該当あり」の項目が出ています。地図のタブとチェックリストで詳しく確認しましょう。';
+    } else if (karte.riskSummary) {
+      nextText = '大きな懸念は確認されませんでした。次はチェックリストと自治体窓口への確認に進みましょう。';
+    } else {
+      nextText = '住所を確認中です…';
+    }
+
+    const unconfirmedHtml = karte.unconfirmed.length
+      ? `<div class="journey-unconfirmed"><span class="chip">未確認 ${karte.unconfirmed.length}件</span>${karte.unconfirmed.map(u => u.label).join(' / ')}</div>`
+      : '';
+
+    el.innerHTML = `
+      <div class="journey-title">🏡 あなたの家づくり</div>
+      <div class="journey-steps">${stepsHtml}</div>
+      <div class="journey-next"><span class="ico">${nextIco}</span><span>${nextText}</span></div>
+      ${unconfirmedHtml}
+    `;
   }
 
   function wireSummaryRowClicks() {
@@ -959,7 +1089,14 @@
     `;
     guideCard.querySelectorAll('.guide-opt-btn').forEach(b => {
       b.addEventListener('click', () => {
-        guideAnswers[step.id] = step.options[Number(b.dataset.i)].tag;
+        const chosen = step.options[Number(b.dataset.i)];
+        guideAnswers[step.id] = chosen.tag;
+        karte.guideAnswers = guideAnswers;
+        karte.unconfirmed = karte.unconfirmed.filter(u => u.id !== step.id);
+        if (['unknown', 'undecided', 'unsure'].includes(chosen.tag)) {
+          karte.unconfirmed.push({ id: step.id, label: step.q });
+        }
+        saveKarte();
         const ni = nextApplicableIndex(guideIdx);
         if (ni < GUIDE_STEPS.length) { guideIdx = ni; renderGuideQuestion(); }
         else renderGuideResult();
@@ -1009,6 +1146,11 @@
       }
     }
 
+    karte.guideAnswers = guideAnswers;
+    karte.guideCompleted = true;
+    saveKarte();
+    renderJourney();
+
     guideCard.innerHTML = `
       <div class="host-row">
         <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
@@ -1030,7 +1172,14 @@
       }
     });
     document.getElementById('guideRestartBtn').addEventListener('click', () => {
-      guideAnswers = {}; guideIdx = nextApplicableIndex(-1); renderGuideQuestion();
+      guideAnswers = {};
+      karte.guideAnswers = {};
+      karte.guideCompleted = false;
+      karte.unconfirmed = [];
+      saveKarte();
+      guideIdx = nextApplicableIndex(-1);
+      renderGuideQuestion();
+      renderJourney();
     });
   }
 
@@ -1047,14 +1196,29 @@
     }, 600);
   }
 
-  renderGuideIntro();
+  renderJourney();
+
+  // 家づくりカルテに前回の回答が保存されていれば、質問をやり直させず結果画面から再開する
+  if (karte.guideCompleted && karte.guideAnswers && Object.keys(karte.guideAnswers).length) {
+    guideAnswers = Object.assign({}, karte.guideAnswers);
+    renderGuideResult();
+  } else {
+    renderGuideIntro();
+  }
 
   // Show a usable, interactive map immediately (no address required to start).
   initMapIfNeeded();
   buildTabs();
   setHazardLayer(activeKey);
-  setStatus('地図をタップ/ドラッグして場所を選ぶか、上で住所を入力してください。', '');
   setTimeout(() => map.invalidateSize(), 50);
+
+  // 前回の続きから: 保存された地点があれば自動で復元する
+  if (karte.lastLocation) {
+    setStatus('前回の続き(保存された地点)を読み込み中…', 'loading');
+    movePin(karte.lastLocation.lat, karte.lastLocation.lng, { recenter: true });
+  } else {
+    setStatus('地図をタップ/ドラッグして場所を選ぶか、上で住所を入力してください。', '');
+  }
 </script>
 
 </body>
