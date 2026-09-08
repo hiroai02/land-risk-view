@@ -580,6 +580,50 @@
   }
   .disclaimer strong { display: block; margin-bottom: 4px; }
 
+  /* ---------- Product recommendation card (contextual, hazard-triggered) ---------- */
+  .product-intro { font-size: 0.87rem; margin-bottom: 14px; }
+  .product-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
+    margin-bottom: 12px;
+  }
+  .product-item:last-of-type { margin-bottom: 4px; }
+  .product-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .product-type-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    background: var(--chip-bg);
+    padding: 2px 9px;
+    border-radius: 999px;
+    flex: none;
+  }
+  .product-name { font-size: 0.92rem; font-weight: 700; }
+  .product-meta { font-size: 0.8rem; color: var(--sub); margin-bottom: 8px; }
+  .product-pc { font-size: 0.85rem; margin: 6px 0; }
+  .product-pc b { color: var(--accent-dark); }
+  .product-fit { font-size: 0.82rem; color: var(--sub); margin-top: 8px; }
+  .product-buy-row { margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .product-buy-btn {
+    display: inline-block;
+    padding: 9px 16px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 9px;
+    text-decoration: none;
+  }
+  .product-summary {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+  .product-assoc-note { font-size: 0.74rem; color: var(--sub); margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+
   .checklist {
     background: var(--card);
     border: 1px solid var(--border);
@@ -660,6 +704,8 @@
       <strong>⚠️ このツールについて</strong>
       公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定は一切していません。実際の購入・建築の判断は、必ず自治体の窓口や不動産・建築の専門家に確認してください。
     </div>
+
+    <div class="guide-card" id="productsCard" style="display:none;"></div>
 
     <div class="checklist">
       <h2>あわせて確認したいこと</h2>
@@ -973,6 +1019,7 @@
     saveKarte();
     renderJourney();
     renderQuestionGenerator(resultMap);
+    renderFloodProducts(resultMap);
 
     const saveBtn = document.getElementById('saveLandBtn');
     if (saveBtn) {
@@ -1020,6 +1067,62 @@
       }
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     };
+  }
+
+  // ---------- 浸水対策グッズの商品紹介(問題提起→解決方法→商品の順を守る) ----------
+  // 商品データは products.json に一本化(捏造禁止・実データのみ)。ハザードが「該当あり」の
+  // 時だけ表示し、「該当なし」の人には売り込まない(原文29項目の思想に基づく)。
+  let floodProductsData = null;
+  async function loadFloodProducts() {
+    if (floodProductsData) return floodProductsData;
+    try {
+      const res = await fetch('products.json');
+      if (!res.ok) throw new Error('load failed');
+      floodProductsData = await res.json();
+    } catch (e) {
+      floodProductsData = null;
+    }
+    return floodProductsData;
+  }
+
+  async function renderFloodProducts(riskSummary) {
+    const card = document.getElementById('productsCard');
+    const hasFloodRisk = riskSummary && (riskSummary.flood === 'hit' || riskSummary.tsunami === 'hit' || riskSummary.hightide === 'hit');
+    if (!hasFloodRisk) { card.style.display = 'none'; return; }
+
+    const data = await loadFloodProducts();
+    if (!data || !data.products || !data.products.length) { card.style.display = 'none'; return; }
+
+    const itemsHtml = data.products.map(p => `
+      <div class="product-item">
+        <div class="product-head">
+          <span class="product-type-badge">${p.type}</span>
+          <span class="product-name">${p.name}</span>
+        </div>
+        <div class="product-meta">★${p.rating}(${p.reviewCount}件) ・ ¥${p.price.toLocaleString()}(${p.priceCheckedAt}時点、変動する可能性があります)</div>
+        <div class="product-pc"><b>良い点:</b> ${p.pros.join(' / ')}</div>
+        <div class="product-pc"><b>気になる点:</b> ${p.cons.join(' / ')}</div>
+        <div class="product-fit">向いている人: ${p.goodFor}<br>向いていない人: ${p.notFor}</div>
+        <div class="product-buy-row">
+          <a class="product-buy-btn" href="${p.affiliateUrl}" target="_blank" rel="noopener sponsored">Amazonで見る ›</a>
+        </div>
+      </div>`).join('');
+
+    card.innerHTML = `
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>この地点は洪水・津波・高潮のいずれかの想定区域に該当していました。「必ず買うべき」ということではありませんが、自治体への確認と合わせて、家庭でできる浸水対策グッズも知っておくと安心です。実際にAmazonで販売されている3タイプを、価格・実レビューで比較しました。</div>
+        </div>
+      </div>
+      ${itemsHtml}
+      <div class="product-summary">
+        <b>状況別のおすすめ:</b> まず手軽に備えたいなら吸水土のう、玄関の間口に合わせてしっかり備えたいなら止水板、工具を使わず室内から設置したいならとめっぱLightが候補になります。3つとも完全な止水を保証するものではないため、自治体のハザードマップ・避難情報と合わせてご確認ください。
+      </div>
+      <div class="product-assoc-note">当サイトはAmazonアソシエイト・プログラムの参加者です。上記リンクを経由した購入により、当サイトに紹介料が支払われることがあります(お客様の負担額は変わりません)。価格・評価件数は${data.lastUpdated}時点の確認情報です。</div>
+    `;
+    card.style.display = '';
   }
 
   const JOURNEY_STAGES = ['土地', '予算', '住宅会社', 'ローン', '間取り', '見積', '契約', '建築', '引渡し', '入居'];
