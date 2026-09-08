@@ -925,9 +925,82 @@
   }
   .bottom-nav a.active { color: var(--ink); font-weight: 700; }
   .bottom-nav a.active .bn-dot { background: var(--accent); }
+
+  /* ---------- アイコン(Lucideのアウトラインアイコンに統一、絵文字は使わない) ---------- */
+  .ico-svg {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    flex: none;
+    stroke: currentColor;
+  }
 </style>
 </head>
 <body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-droplets" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z" />
+    <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97" />
+  </symbol>
+  <symbol id="i-mountain" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+  </symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+    <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+    <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+  </symbol>
+  <symbol id="i-waves" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 12q2.5 2 5 0t5 0 5 0 5 0" />
+    <path d="M2 19q2.5 2 5 0t5 0 5 0 5 0" />
+    <path d="M2 5q2.5 2 5 0t5 0 5 0 5 0" />
+  </symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.8 19.6A2 2 0 1 0 14 16H2" />
+    <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" />
+    <path d="M9.8 4.4A2 2 0 1 1 11 8H2" />
+  </symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48" />
+    <path d="M15 6h1v4" />
+    <path d="m6.134 14.768.866-.5 2 3.464" />
+    <circle cx="16" cy="8" r="6" />
+  </symbol>
+  <symbol id="i-landmark" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 18v-7" />
+    <path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z" />
+    <path d="M14 18v-7" />
+    <path d="M18 18v-7" />
+    <path d="M3 22h18" />
+    <path d="M6 18v-7" />
+  </symbol>
+  <symbol id="i-cloud-sun" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="M20 12h2" />
+    <path d="m19.07 4.93-1.41 1.41" />
+    <path d="M15.947 12.65a4 4 0 0 0-5.925-4.128" />
+    <path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" />
+  </symbol>
+  <symbol id="i-help-circle" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <path d="M12 17h.01" />
+  </symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m21 21-4.34-4.34" />
+    <circle cx="11" cy="11" r="8" />
+  </symbol>
+  <symbol id="i-square-pen" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+  </symbol>
+  <symbol id="i-map-pin" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+    <circle cx="12" cy="10" r="3" />
+  </symbol>
+</svg>
 
 <div class="wrap">
 
@@ -960,7 +1033,7 @@
 
     <div class="summary-card" id="summaryCard"></div>
 
-    <button class="guide-skip" id="saveLandBtn" style="margin-bottom:14px; display:none;">📍 この場所を候補地として保存して比較する</button>
+    <button class="guide-skip" id="saveLandBtn" style="margin-bottom:14px; display:none;"><svg class="ico-svg"><use href="#i-map-pin"/></svg> この場所を候補地として保存して比較する</button>
 
     <div class="tabs" id="tabs"></div>
 
@@ -976,14 +1049,14 @@
     <div class="checklist">
       <h2>あわせて確認したいこと</h2>
       <ul>
-        <li><span class="ico">💰</span>土地価格だけでなく、造成・地盤改良・擁壁・水道引込などを含めた総額で比較できているか</li>
-        <li><span class="ico">🏛️</span>自治体の窓口で、用途地域・建ぺい率・容積率・建築条件を確認したか</li>
-        <li><span class="ico">🌦️</span>晴天時だけでなく、雨天時や別の時間帯にも現地を見たか</li>
+        <li><svg class="ico ico-svg"><use href="#i-coins"/></svg>土地価格だけでなく、造成・地盤改良・擁壁・水道引込などを含めた総額で比較できているか</li>
+        <li><svg class="ico ico-svg"><use href="#i-landmark"/></svg>自治体の窓口で、用途地域・建ぺい率・容積率・建築条件を確認したか</li>
+        <li><svg class="ico ico-svg"><use href="#i-cloud-sun"/></svg>晴天時だけでなく、雨天時や別の時間帯にも現地を見たか</li>
       </ul>
     </div>
 
     <div class="money-card" id="questionGenCard" style="display:none;">
-      <h2>❓ 住宅会社に聞くことリスト</h2>
+      <h2><svg class="ico-svg"><use href="#i-help-circle"/></svg> 住宅会社に聞くことリスト</h2>
       <p class="money-lead">この土地の状況とご回答から、確認しておきたい質問を自動でまとめます(定型文であり、AIによる生成ではありません)。</p>
       <ul class="qgen-list" id="qgenList"></ul>
       <div class="guide-cta-row" style="margin-top:10px;">
@@ -1188,12 +1261,16 @@
   const karte = loadKarte();
 
   const HAZARD_LAYERS = [
-    { key: 'flood',     id: '01_flood_l2_shinsuishin_data', label: '🌊 洪水' },
-    { key: 'dosekiryu', id: '05_dosekiryukeikaikuiki',       label: '⛰️ 土石流' },
-    { key: 'jisuberi',  id: '05_jisuberikeikaikuiki',        label: '🪨 地すべり' },
-    { key: 'tsunami',   id: '04_tsunami_newlegend',          label: '🌐 津波' },
-    { key: 'hightide',  id: '03_hightide_l2_shinsuishin',    label: '🌀 高潮' }
+    { key: 'flood',     id: '01_flood_l2_shinsuishin_data', label: '洪水',     icon: 'droplets' },
+    { key: 'dosekiryu', id: '05_dosekiryukeikaikuiki',       label: '土石流',   icon: 'mountain' },
+    { key: 'jisuberi',  id: '05_jisuberikeikaikuiki',        label: '地すべり', icon: 'layers' },
+    { key: 'tsunami',   id: '04_tsunami_newlegend',          label: '津波',     icon: 'waves' },
+    { key: 'hightide',  id: '03_hightide_l2_shinsuishin',    label: '高潮',     icon: 'wind' }
   ];
+  const HAZARD_ICON_BY_KEY = Object.fromEntries(HAZARD_LAYERS.map(l => [l.key, l.icon]));
+  function iconSvg(name, cls) {
+    return `<svg class="${cls || 'ico-svg'}"><use href="#i-${name}"/></svg>`;
+  }
 
   // 浸水深ランクは国土交通省「水害ハザードマップ作成の手引き」(重ねるハザードマップの凡例)に基づく実際の区分。
   // 色は目安として作成したもので、公式サイトのピクセル色そのものと一致する保証はない(その旨を画面上にも明記)。
@@ -1319,11 +1396,11 @@
   }
 
   const SUMMARY_LABELS = {
-    flood:     { label: '🌊 洪水浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
-    dosekiryu: { label: '⛰️ 土石流警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
-    jisuberi:  { label: '🪨 地すべり警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
-    tsunami:   { label: '🌐 津波浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
-    hightide:  { label: '🌀 高潮浸水想定', hit: '該当あり', clear: '想定なし(データ上)' }
+    flood:     { label: '洪水浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
+    dosekiryu: { label: '土石流警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
+    jisuberi:  { label: '地すべり警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
+    tsunami:   { label: '津波浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
+    hightide:  { label: '高潮浸水想定', hit: '該当あり', clear: '想定なし(データ上)' }
   };
 
   let summaryRequestId = 0;
@@ -1336,7 +1413,7 @@
       <div class="summary-note">住所検索の1回で、5種類の公式ハザード指定の有無をまとめて確認できます(確認中…)。</div>
       ${HAZARD_LAYERS.map(l => `
         <div class="summary-row" data-key="${l.key}">
-          <div class="s-label">${SUMMARY_LABELS[l.key].label}</div>
+          <div class="s-label">${iconSvg(l.icon)} ${SUMMARY_LABELS[l.key].label}</div>
           <span class="summary-chip pending">確認中…</span>
         </div>`).join('')}
     `;
@@ -1460,7 +1537,7 @@
       nextState = 'attention';
       const hitLabels = Object.entries(karte.riskSummary)
         .filter(([, v]) => v === 'hit')
-        .map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label.replace(/^\S+\s/, '') : k);
+        .map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label : k);
       nextText = `${hitLabels.join('・')}の想定区域に該当しているようです。地図で見ておくと、後で慌てずに済みます。`;
       nextBtn = { label: '地図で見る', target: 'landSection' };
     } else if (karte.riskSummary) {
@@ -1694,7 +1771,7 @@
         </div>
       </div>
       <div class="guide-cta-row" style="margin-top:10px;">
-        <a class="guide-start-btn" style="text-decoration:none; display:inline-block;" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔍 このあたりの物件を探す</a>
+        <a class="guide-start-btn" style="text-decoration:none; display:inline-block;" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${iconSvg('search')} このあたりの物件を探す</a>
       </div>
     `;
     if (localLink) {
@@ -1750,7 +1827,7 @@
     HAZARD_LAYERS.forEach(def => {
       const btn = document.createElement('button');
       btn.className = 'tab-btn' + (def.key === activeKey ? ' active' : '');
-      btn.textContent = def.label;
+      btn.innerHTML = `${iconSvg(def.icon)} ${def.label}`;
       btn.dataset.key = def.key;
       btn.addEventListener('click', () => setHazardLayer(def.key));
       tabsEl.appendChild(btn);
@@ -1961,9 +2038,9 @@
       msg += ' 何から見ればいいか迷う場合は、まず下のハザード地図→次にチェックリストの順に見るのがおすすめです。';
     } else if (concern === 'hazard') {
       const hazardMsgMap = {
-        flood: '洪水・浸水が気になるとのことなので、地図は「🌊 洪水」タブを開いた状態にしておきますね。',
-        dosekiryu: '土砂災害が気になるとのことなので、地図は「⛰️ 土石流」タブを開いた状態にしておきますね。地すべりの区域も別タブで確認できます。',
-        tsunami: '津波・高潮が気になるとのことなので、地図は「🌐 津波」タブを開いた状態にしておきますね。',
+        flood: '洪水・浸水が気になるとのことなので、地図は「洪水」タブを開いた状態にしておきますね。',
+        dosekiryu: '土砂災害が気になるとのことなので、地図は「土石流」タブを開いた状態にしておきますね。地すべりの区域も別タブで確認できます。',
+        tsunami: '津波・高潮が気になるとのことなので、地図は「津波」タブを開いた状態にしておきますね。',
         all: '災害の種類が絞れないとのことなので、洪水タブから順に、上のタブを1つずつ切り替えて全部確認してみてください。'
       };
       msg += ' ' + (hazardMsgMap[hazardDetail] || '');
@@ -2318,7 +2395,7 @@
         <div class="check-row" data-i="${i}">
           <input type="checkbox" ${entry.checked ? 'checked' : ''}>
           <span>${item}</span>
-          <button class="note-toggle" data-i="${i}" type="button">${entry.note ? '📝 メモあり' : '📝 メモ'}</button>
+          <button class="note-toggle" data-i="${i}" type="button">${iconSvg('square-pen')} ${entry.note ? 'メモあり' : 'メモ'}</button>
         </div>
         <textarea class="note-input" data-i="${i}" placeholder="確認した内容をメモ(任意)" style="display:${entry.note ? '' : 'none'};">${entry.note}</textarea>
       </li>`;
@@ -2377,7 +2454,7 @@
     if (karte.savedLands.length === 0) { card.style.display = 'none'; return; }
     card.style.display = '';
     table.innerHTML = karte.savedLands.map((land, i) => {
-      const hits = Object.entries(land.riskSummary || {}).filter(([, v]) => v === 'hit').map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label.replace(/^\S+\s/, '') : k);
+      const hits = Object.entries(land.riskSummary || {}).filter(([, v]) => v === 'hit').map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label : k);
       const tag = hits.length ? `該当あり: ${hits.join('・')}` : '該当ハザードなし(データ上)';
       const d = land.details || {};
       let costLine = '';
