@@ -357,6 +357,55 @@
     flex: none;
   }
 
+  .saved-land-row-full {
+    padding: 12px 0;
+    border-top: 1px dashed var(--border);
+    font-size: 0.86rem;
+  }
+  .saved-land-row-full:first-child { border-top: none; }
+  .sl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .sl-actions { display: flex; gap: 6px; flex: none; }
+  .sl-actions button {
+    font-size: 0.76rem;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .sl-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .sl-detail-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.72rem;
+    color: var(--sub);
+    position: relative;
+  }
+  .sl-detail-grid input {
+    padding: 8px 10px;
+    font-size: 0.86rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    width: 100%;
+  }
+  .sl-detail-grid span {
+    position: absolute;
+    right: 8px;
+    bottom: 7px;
+    font-size: 0.7rem;
+    color: var(--sub);
+    pointer-events: none;
+  }
+
   /* ---------- Journey (home dashboard) ---------- */
   .journey-card {
     background: var(--card);
@@ -688,79 +737,6 @@
   }
   .disclaimer strong { display: block; margin-bottom: 4px; }
 
-  /* ---------- Product recommendation card (contextual, hazard-triggered) ---------- */
-  .product-item {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 12px 13px;
-    margin-bottom: 10px;
-  }
-  .product-item:last-of-type { margin-bottom: 0; }
-  .product-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 3px; }
-  .product-type-badge {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--accent-dark);
-    background: var(--accent-soft);
-    padding: 2px 9px;
-    border-radius: 999px;
-    flex: none;
-  }
-  .product-name { font-size: 0.9rem; font-weight: 700; }
-  .product-meta { font-size: 0.78rem; color: var(--sub); margin-bottom: 6px; }
-  .product-pc { font-size: 0.84rem; margin: 5px 0; }
-  .product-pc b { color: var(--accent-dark); }
-  .product-fit { font-size: 0.8rem; color: var(--sub); margin-top: 6px; }
-  .product-buy-row { margin-top: 9px; }
-  .product-buy-btn {
-    display: inline-block;
-    padding: 8px 15px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    background: var(--accent);
-    color: var(--accent-ink);
-    border-radius: 9px;
-    text-decoration: none;
-  }
-  .product-assoc-note { font-size: 0.72rem; color: var(--sub); margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
-
-  /* ---------- Move-in countdown + purchase list ---------- */
-  .movein-date-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-  .movein-date-row input[type=date] {
-    padding: 10px 12px;
-    font-size: 0.9rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--ink);
-  }
-  .purchase-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 9px 0;
-    border-top: 1px dashed var(--border);
-    font-size: 0.87rem;
-  }
-  .purchase-item:first-child { border-top: none; }
-  .purchase-status-btn {
-    flex: none;
-    font-size: 0.74rem;
-    font-weight: 700;
-    padding: 4px 11px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .purchase-status-btn.st-unset { background: var(--chip-bg); color: var(--sub); }
-  .purchase-status-btn.st-necessary { background: var(--warn-bg); color: var(--warn); }
-  .purchase-status-btn.st-want { background: var(--accent-soft); color: var(--accent-dark); }
-  .purchase-status-btn.st-later { background: var(--unknown-bg); color: var(--unknown); }
-  .purchase-status-btn.st-unnecessary { background: var(--chip-bg); color: var(--sub); text-decoration: line-through; }
-  .purchase-status-btn.st-purchased { background: var(--ok-bg); color: var(--ok); }
-
   .checklist {
     background: var(--card);
     border: 1px solid var(--border);
@@ -879,8 +855,6 @@
       <strong>⚠️ このツールについて</strong>
       公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定は一切していません。実際の購入・建築の判断は、必ず自治体の窓口や不動産・建築の専門家に確認してください。
     </div>
-
-    <div class="guide-card" id="productsCard" style="display:none;"></div>
 
     <div class="checklist">
       <h2>あわせて確認したいこと</h2>
@@ -1022,23 +996,6 @@
   <div class="money-card" id="savedLandsCard" style="display:none;">
     <h2>保存した候補地の比較</h2>
     <div id="savedLandsTable"></div>
-  </div>
-
-  <div class="step-label"><span class="num">5</span>入居に向けて準備する</div>
-
-  <div class="money-card" id="moveInSection">
-    <h2>入居予定日</h2>
-    <p class="money-lead">入居予定日を入れると、時期に応じてやることの目安を表示します。</p>
-    <div class="movein-date-row">
-      <input type="date" id="moveInDate">
-    </div>
-    <div class="money-result" id="moveInResult"></div>
-  </div>
-
-  <div class="money-card">
-    <h2>新築購入リスト</h2>
-    <p class="money-lead">タップするたびに状態が切り替わります(未設定→必要→欲しい→後で買う→不要→購入済み)。端末に保存されます。</p>
-    <div id="purchaseList"></div>
   </div>
 
   <footer>
@@ -1268,7 +1225,6 @@
     saveKarte();
     renderJourney();
     renderQuestionGenerator(resultMap);
-    renderFloodProducts(resultMap);
 
     const saveBtn = document.getElementById('saveLandBtn');
     if (saveBtn) {
@@ -1316,133 +1272,6 @@
       }
       setTimeout(() => { statusEl.textContent = ''; }, 3000);
     };
-  }
-
-  // ---------- 浸水対策グッズの商品紹介(問題提起→解決方法→商品の順を守る) ----------
-  // 商品データは products.json に一本化(捏造禁止・実データのみ)。ハザードが「該当あり」の
-  // 時だけ表示し、「該当なし」の人には売り込まない(STRATEGY.mdの最重要思想に基づく)。
-  let floodProductsData = null;
-  async function loadFloodProducts() {
-    if (floodProductsData) return floodProductsData;
-    try {
-      const res = await fetch('products.json');
-      if (!res.ok) throw new Error('load failed');
-      floodProductsData = await res.json();
-    } catch (e) {
-      floodProductsData = null;
-    }
-    return floodProductsData;
-  }
-
-  async function renderFloodProducts(riskSummary) {
-    const card = document.getElementById('productsCard');
-    const hasFloodRisk = riskSummary && (riskSummary.flood === 'hit' || riskSummary.tsunami === 'hit' || riskSummary.hightide === 'hit');
-    if (!hasFloodRisk) { card.style.display = 'none'; return; }
-
-    const data = await loadFloodProducts();
-    if (!data || !data.products || !data.products.length) { card.style.display = 'none'; return; }
-
-    const itemsHtml = data.products.map(p => `
-      <div class="product-item">
-        <div class="product-head">
-          <span class="product-type-badge">${p.type}</span>
-          <span class="product-name">${p.name}</span>
-        </div>
-        <div class="product-meta">★${p.rating}(${p.reviewCount}件) ・ ¥${p.price.toLocaleString()}(${p.priceCheckedAt}時点、変動する可能性があります)</div>
-        <div class="product-pc"><b>良い点:</b> ${p.pros.join(' / ')}</div>
-        <div class="product-pc"><b>気になる点:</b> ${p.cons.join(' / ')}</div>
-        <div class="product-fit">向いている人: ${p.goodFor}<br>向いていない人: ${p.notFor}</div>
-        <div class="product-buy-row">
-          <a class="product-buy-btn" href="${p.affiliateUrl}" target="_blank" rel="noopener sponsored">Amazonで見る ›</a>
-        </div>
-      </div>`).join('');
-
-    card.innerHTML = `
-      <div class="host-row">
-        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
-        <div class="host-bubble">
-          <div class="host-name">みさき</div>
-          <div>この地点は洪水・津波・高潮のいずれかの想定区域に該当していました。「必ず買うべき」ということではありませんが、自治体への確認と合わせて、家庭でできる浸水対策グッズも知っておくと安心です。実際にAmazonで販売されている3タイプを、価格・実レビューで比較しました。</div>
-        </div>
-      </div>
-      ${itemsHtml}
-      <div class="money-result">
-        <b>状況別のおすすめ:</b> まず手軽に備えたいなら吸水土のう、玄関の間口に合わせてしっかり備えたいなら止水板、工具を使わず室内から設置したいならとめっぱLightが候補になります。3つとも完全な止水を保証するものではないため、自治体のハザードマップ・避難情報と合わせてご確認ください。
-      </div>
-      <div class="product-assoc-note">当サイトはAmazonアソシエイト・プログラムの参加者です。上記リンクを経由した購入により、当サイトに紹介料が支払われることがあります(お客様の負担額は変わりません)。価格・評価件数は${data.lastUpdated}時点の確認情報です。</div>
-    `;
-    card.style.display = '';
-  }
-
-  // ---------- 入居◯日前カウントダウン ----------
-  const MOVEIN_PHASES = [
-    { days: 30, label: '30日前', text: '引っ越し業者の手配・不用品の処分など、引っ越し全体の準備を始める目安です。' },
-    { days: 14, label: '14日前', text: '掃除用品・収納用品など、新居に運び込む前に用意しておきたいものを揃える目安です。' },
-    { days: 7,  label: '7日前',  text: '洗剤・トイレットペーパーなど、入居初日から必要な生活必需品を確認する目安です。' },
-    { days: 1,  label: '前日',   text: '鍵・契約書類・引っ越し業者への最終確認など、忘れ物がないかチェックする目安です。' },
-    { days: -7, label: '入居後7日', text: '実際に暮らしてみて足りないもの・買い足したいものを確認する目安です。' }
-  ];
-  function renderMoveInCountdown() {
-    const input = document.getElementById('moveInDate');
-    const el = document.getElementById('moveInResult');
-    if (karte.moveInDate) input.value = karte.moveInDate;
-    if (!input.value) {
-      el.innerHTML = '入居予定日を入力すると、時期に応じたやることの目安を表示します。';
-      el.className = 'money-result';
-      return;
-    }
-    const target = new Date(input.value + 'T00:00:00');
-    const today = new Date(); today.setHours(0,0,0,0);
-    const diffDays = Math.round((target - today) / 86400000);
-
-    let phase = null;
-    for (const p of MOVEIN_PHASES) { if (diffDays <= p.days) phase = p; }
-    if (diffDays > 30) phase = null;
-
-    const dateLabel = diffDays >= 0 ? `入居予定日まで あと<span class="big">${diffDays}日</span>` : `入居から<span class="big">${Math.abs(diffDays)}日</span>経過`;
-    el.innerHTML = phase
-      ? `${dateLabel}<br><b>${phase.label}の目安:</b> ${phase.text}`
-      : `${dateLabel}<br>まだ先の予定です。30日前になったら、このページで準備の目安を確認してください。`;
-    el.className = 'money-result';
-  }
-  document.getElementById('moveInDate').addEventListener('input', (e) => {
-    karte.moveInDate = e.target.value;
-    saveKarte();
-    renderMoveInCountdown();
-  });
-
-  // ---------- 新築購入リスト(必要/欲しい/後で買う/不要/購入済みを巡回) ----------
-  const PURCHASE_ITEMS = ['掃除機', '収納', 'カーテン', '照明', '家具', 'Wi-Fi', '防災用品', '工具', '洗剤', 'キッチン用品'];
-  const PURCHASE_STATES = [
-    { key: 'unset',       label: '未設定' },
-    { key: 'necessary',   label: '必要' },
-    { key: 'want',        label: '欲しい' },
-    { key: 'later',       label: '後で買う' },
-    { key: 'unnecessary', label: '不要' },
-    { key: 'purchased',   label: '購入済み' }
-  ];
-  function renderPurchaseList() {
-    if (!karte.purchaseList) karte.purchaseList = {};
-    const el = document.getElementById('purchaseList');
-    el.innerHTML = PURCHASE_ITEMS.map(item => {
-      const stateKey = karte.purchaseList[item] || 'unset';
-      const state = PURCHASE_STATES.find(s => s.key === stateKey);
-      return `
-        <div class="purchase-item">
-          <span>${item}</span>
-          <button class="purchase-status-btn st-${state.key}" data-item="${item}">${state.label}</button>
-        </div>`;
-    }).join('');
-    el.querySelectorAll('.purchase-status-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.dataset.item;
-        const curIdx = PURCHASE_STATES.findIndex(s => s.key === (karte.purchaseList[item] || 'unset'));
-        const next = PURCHASE_STATES[(curIdx + 1) % PURCHASE_STATES.length];
-        karte.purchaseList[item] = next.key;
-        saveKarte();
-        renderPurchaseList();
-      });
-    });
   }
 
   const JOURNEY_STAGES = ['土地', '予算', '住宅会社', 'ローン', '間取り', '見積', '契約', '建築', '引渡し', '入居'];
@@ -2233,15 +2062,31 @@
     card.style.display = '';
     table.innerHTML = karte.savedLands.map((land, i) => {
       const hits = Object.entries(land.riskSummary || {}).filter(([, v]) => v === 'hit').map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label.replace(/^\S+\s/, '') : k);
-      const tag = hits.length ? `⚠️ ${hits.join('・')}` : '該当ハザードなし(データ上)';
+      const tag = hits.length ? `該当あり: ${hits.join('・')}` : '該当ハザードなし(データ上)';
+      const d = land.details || {};
+      let costLine = '';
+      if (d.price) {
+        const tsuboPrice = d.size ? Math.round((Number(d.price) / Number(d.size)) * 10) / 10 : null;
+        costLine = `<div class="sl-tags">土地代 ${Number(d.price).toLocaleString()}万円${tsuboPrice ? `(坪単価 目安 約${tsuboPrice}万円)` : ''}</div>`;
+      }
       return `
-        <div class="saved-land-row">
-          <div>
-            <div class="sl-name">${land.label}</div>
-            <div class="sl-tags">${tag}</div>
+        <div class="saved-land-row-full" data-i="${i}">
+          <div class="sl-head">
+            <div>
+              <div class="sl-name">${land.label}</div>
+              <div class="sl-tags">${tag}</div>
+              ${costLine}
+            </div>
+            <div class="sl-actions">
+              <button data-act="view" data-i="${i}">見る</button>
+              <button data-act="del" data-i="${i}">削除</button>
+            </div>
           </div>
-          <button data-act="view" data-i="${i}">見る</button>
-          <button data-act="del" data-i="${i}">削除</button>
+          <div class="sl-detail-grid">
+            <label>価格<input type="number" data-field="price" data-i="${i}" value="${d.price || ''}" placeholder="0"><span>万円</span></label>
+            <label>面積<input type="number" data-field="size" data-i="${i}" value="${d.size || ''}" placeholder="0"><span>坪</span></label>
+            <label>駅徒歩<input type="number" data-field="station" data-i="${i}" value="${d.station || ''}" placeholder="0"><span>分</span></label>
+          </div>
         </div>`;
     }).join('');
     table.querySelectorAll('button[data-act="view"]').forEach(b => {
@@ -2254,6 +2099,16 @@
     table.querySelectorAll('button[data-act="del"]').forEach(b => {
       b.addEventListener('click', () => {
         karte.savedLands.splice(Number(b.dataset.i), 1);
+        saveKarte();
+        renderSavedLands();
+      });
+    });
+    table.querySelectorAll('.sl-detail-grid input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const i = Number(inp.dataset.i);
+        const field = inp.dataset.field;
+        if (!karte.savedLands[i].details) karte.savedLands[i].details = {};
+        karte.savedLands[i].details[field] = inp.value;
         saveKarte();
         renderSavedLands();
       });
@@ -2276,9 +2131,6 @@
   }
 
   renderSavedLands();
-
-  renderMoveInCountdown();
-  renderPurchaseList();
 
   renderJourney();
 
