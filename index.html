@@ -418,6 +418,7 @@
     gap: 8px;
     margin-top: 10px;
   }
+  .sl-detail-grid.sl-detail-grid2 { grid-template-columns: repeat(2, 1fr); }
   .sl-detail-grid label {
     display: flex;
     flex-direction: column;
@@ -426,7 +427,7 @@
     color: var(--sub);
     position: relative;
   }
-  .sl-detail-grid input {
+  .sl-detail-grid input, .sl-detail-grid select {
     padding: 8px 10px;
     font-size: 0.86rem;
     border: 1px solid var(--border);
@@ -435,6 +436,17 @@
     color: var(--ink);
     width: 100%;
   }
+  .sl-more-toggle {
+    margin-top: 10px;
+    font-size: 0.76rem;
+    color: var(--accent);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .sl-more-note { font-size: 0.7rem; color: var(--sub); margin-top: 8px; }
   .sl-detail-grid span {
     position: absolute;
     right: 8px;
@@ -2354,6 +2366,10 @@
   renderStageChecklist();
 
   // ---------- 候補地の保存・比較 ----------
+  const ZONING_OPTIONS = ['第一種低層住居専用地域', '第二種低層住居専用地域', '第一種中高層住居専用地域', '第二種中高層住居専用地域', '第一種住居地域', '第二種住居地域', '準住居地域', '近隣商業地域', '商業地域', '準工業地域', '工業地域', '工業専用地域', '不明・未確認'];
+  const ROAD_ACCESS_OPTIONS = ['満たしている(2m以上接道)', '不明・要確認', '満たしていない可能性(要確認)'];
+  const LAND_CARD_FIELDS = [{ key: 'zoning' }, { key: 'roadAccess' }, { key: 'coverageRatio' }, { key: 'floorAreaRatio' }, { key: 'roadWidth' }];
+  const slMoreOpen = new Set();
   function renderSavedLands() {
     if (!karte.savedLands) karte.savedLands = [];
     const card = document.getElementById('savedLandsCard');
@@ -2387,8 +2403,36 @@
             <label>面積<input type="number" data-field="size" data-i="${i}" value="${d.size || ''}" placeholder="0"><span>坪</span></label>
             <label>駅徒歩<input type="number" data-field="station" data-i="${i}" value="${d.station || ''}" placeholder="0"><span>分</span></label>
           </div>
+          <button class="sl-more-toggle" data-i="${i}" type="button">土地カルテを詳しく記録する(用途地域・建ぺい率など)${LAND_CARD_FIELDS.some(f => d[f.key]) ? ' (記録あり)' : ''} ▾</button>
+          <div class="sl-more" data-i="${i}" ${slMoreOpen.has(i) ? '' : 'hidden'}>
+            <div class="sl-detail-grid sl-detail-grid2">
+              <label>用途地域
+                <select data-field="zoning" data-i="${i}">
+                  <option value="">選択(不明なら空欄)</option>
+                  ${ZONING_OPTIONS.map(z => `<option value="${z}" ${d.zoning === z ? 'selected' : ''}>${z}</option>`).join('')}
+                </select>
+              </label>
+              <label>接道状況
+                <select data-field="roadAccess" data-i="${i}">
+                  <option value="">選択(不明なら空欄)</option>
+                  ${ROAD_ACCESS_OPTIONS.map(o => `<option value="${o}" ${d.roadAccess === o ? 'selected' : ''}>${o}</option>`).join('')}
+                </select>
+              </label>
+              <label>建ぺい率<input type="number" data-field="coverageRatio" data-i="${i}" value="${d.coverageRatio || ''}" placeholder="0"><span>%</span></label>
+              <label>容積率<input type="number" data-field="floorAreaRatio" data-i="${i}" value="${d.floorAreaRatio || ''}" placeholder="0"><span>%</span></label>
+              <label>道路幅員<input type="number" step="0.1" data-field="roadWidth" data-i="${i}" value="${d.roadWidth || ''}" placeholder="0"><span>m</span></label>
+            </div>
+            <p class="sl-more-note">用途地域・建ぺい率・容積率・接道状況は、自治体の窓口や重要事項説明書で確認できます。このツールが自動取得するものではなく、分かった範囲をご自身で記録するための欄です。</p>
+          </div>
         </div>`;
     }).join('');
+    table.querySelectorAll('.sl-more-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.dataset.i);
+        if (slMoreOpen.has(i)) slMoreOpen.delete(i); else slMoreOpen.add(i);
+        renderSavedLands();
+      });
+    });
     table.querySelectorAll('button[data-act="view"]').forEach(b => {
       b.addEventListener('click', () => {
         const land = karte.savedLands[Number(b.dataset.i)];
@@ -2404,7 +2448,7 @@
         renderJourney();
       });
     });
-    table.querySelectorAll('.sl-detail-grid input').forEach(inp => {
+    table.querySelectorAll('.sl-detail-grid input, .sl-detail-grid select').forEach(inp => {
       inp.addEventListener('change', () => {
         const i = Number(inp.dataset.i);
         const field = inp.dataset.field;
