@@ -701,11 +701,11 @@
     } catch (e) {
       return 'error';
     }
-    if (res.status === 404) return 'clear';
-    if (!res.ok) return 'error';
+    if (res.status === 404) return { status: 'clear' };
+    if (!res.ok) return { status: 'error' };
     return new Promise((resolve) => {
       const img = new Image();
-      const timer = setTimeout(() => resolve('error'), 8000);
+      const timer = setTimeout(() => resolve({ status: 'error' }), 8000);
       img.onload = () => {
         clearTimeout(timer);
         try {
@@ -714,16 +714,43 @@
           canvas.height = img.naturalHeight || 256;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0);
-          const alpha = ctx.getImageData(px, py, 1, 1).data[3];
-          resolve(alpha > 0 ? 'hit' : 'clear');
+          const px4 = ctx.getImageData(px, py, 1, 1).data;
+          if (px4[3] === 0) { resolve({ status: 'clear' }); return; }
+          resolve({ status: 'hit', rgb: [px4[0], px4[1], px4[2]] });
         } catch (e) {
-          resolve('error');
+          resolve({ status: 'error' });
         }
       };
-      img.onerror = () => { clearTimeout(timer); resolve('error'); };
+      img.onerror = () => { clearTimeout(timer); resolve({ status: 'error' }); };
       img.crossOrigin = 'anonymous';
       img.src = url;
     });
+  }
+
+  // 洪水(想定最大規模/現在の凡例)のみ、水害ハザードマップ作成の手引きに基づくRGB値が
+  // 第三者サイトで一覧化されており(rank1は国交省QGISマニュアルの一次情報とも一致確認済み)、
+  // 近似色マッチングで浸水深ランクの「目安」を出せる。津波・高潮・土砂災害系は
+  // 全ランクのRGB値を確認できていないため、この推定は行わない(色の濃淡のみ案内)。
+  const FLOOD_COLOR_TABLE = [
+    { rgb: [247, 245, 169], range: '0.5m未満' },
+    { rgb: [255, 216, 192], range: '0.5〜3.0m' },
+    { rgb: [255, 183, 183], range: '3.0〜5.0m' },
+    { rgb: [255, 145, 145], range: '5.0〜10.0m' },
+    { rgb: [242, 133, 201], range: '10.0〜20.0m' },
+    { rgb: [220, 122, 220], range: '20.0m以上' }
+  ];
+  const FLOOD_MATCH_MAX_DISTANCE = 40; // ユークリッド距離。遠すぎる色は「判定できず」扱いにする
+
+  function nearestFloodRange(rgb) {
+    if (!rgb) return null;
+    let best = null, bestDist = Infinity;
+    for (const entry of FLOOD_COLOR_TABLE) {
+      const d = Math.sqrt(
+        (rgb[0] - entry.rgb[0]) ** 2 + (rgb[1] - entry.rgb[1]) ** 2 + (rgb[2] - entry.rgb[2]) ** 2
+      );
+      if (d < bestDist) { bestDist = d; best = entry.range; }
+    }
+    return bestDist <= FLOOD_MATCH_MAX_DISTANCE ? best : null;
   }
 
   const SUMMARY_LABELS = {
@@ -749,7 +776,7 @@
     `;
     wireSummaryRowClicks();
 
-    const results = await Promise.all(HAZARD_LAYERS.map(l => sampleHazardTile(l.id, lat, lng).then(status => ({ key: l.key, status }))));
+    const results = await Promise.all(HAZARD_LAYERS.map(l => sampleHazardTile(l.id, lat, lng).then(r => ({ key: l.key, status: r.status, rgb: r.rgb }))));
     if (requestId !== summaryRequestId) return; // a newer location was picked meanwhile
 
     const resultMap = {};
@@ -758,12 +785,20 @@
       const row = summaryEl.querySelector(`.summary-row[data-key="${r.key}"] .summary-chip`);
       if (!row) return;
       const labels = SUMMARY_LABELS[r.key];
-      if (r.status === 'hit') { row.textContent = labels.hit; row.className = 'summary-chip hit'; }
+      if (r.status === 'hit') {
+        let text = labels.hit;
+        if (r.key === 'flood') {
+          const range = nearestFloodRange(r.rgb);
+          text += range ? `(目安: ${range})` : '(深さ目安は判定できず)';
+        }
+        row.textContent = text;
+        row.className = 'summary-chip hit';
+      }
       else if (r.status === 'clear') { row.textContent = labels.clear; row.className = 'summary-chip clear'; }
       else { row.textContent = '確認できず'; row.className = 'summary-chip err'; }
     });
     const note = summaryEl.querySelector('.summary-note');
-    if (note) note.textContent = '色の濃淡や深さのランクまではここでは判定していません。詳細は下の地図でタブを切り替えて確認してください。「想定なし」はデータ上そう見える、という意味で、リスクが無いことの保証ではありません。';
+    if (note) note.textContent = '洪水の「目安」は色の近似マッチングによる自動推定で、公式の確定値ではありません(境界付近では隣のランクとずれる場合があります)。津波・高潮・土砂災害は深さランクまでは判定していません。詳細は下の地図でタブを切り替えて確認してください。「想定なし」はデータ上そう見える、という意味で、リスクが無いことの保証ではありません。';
 
     karte.lastLocation = { lat, lng };
     karte.riskSummary = resultMap;
