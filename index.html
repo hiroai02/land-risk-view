@@ -698,6 +698,37 @@
     .search-row { flex-direction: column; }
     .search-row button { width: 100%; }
   }
+
+  /* ---------- Bottom navigation ---------- */
+  body { padding-bottom: 64px; }
+  .bottom-nav {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+  .bottom-nav a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 2px;
+    font-size: 0.68rem;
+    color: var(--sub);
+    text-decoration: none;
+    border-radius: 8px;
+  }
+  .bottom-nav a .bn-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .bottom-nav a.active { color: var(--ink); font-weight: 700; }
+  .bottom-nav a.active .bn-dot { background: var(--accent); }
 </style>
 </head>
 <body>
@@ -715,7 +746,7 @@
   <div class="guide-card" id="guideCard"></div>
 
   <div class="step-label"><span class="num">1</span>住所を入力 または 地図をタップして場所を選ぶ</div>
-  <div class="search-card">
+  <div class="search-card" id="landSection">
     <div class="search-row">
       <input id="addressInput" type="text" placeholder="例: 東京都新宿区西新宿2-8-1" />
       <button id="searchBtn">確認する</button>
@@ -779,7 +810,7 @@
 
   <div class="step-label"><span class="num">3</span>お金を整理する</div>
 
-  <div class="money-card">
+  <div class="money-card" id="moneySection">
     <h2>総額シミュレーター</h2>
     <p class="money-lead">土地価格だけで比べず、諸費用込みの総額とご予算を見比べられます。</p>
     <div class="money-grid">
@@ -820,7 +851,7 @@
     </div>
   </div>
 
-  <div class="money-card">
+  <div class="money-card" id="myPageSection">
     <h2>間取り・仕様の希望</h2>
     <p class="money-lead">一度入力すれば、家づくりカルテに保存され、質問リスト等でも参照します。</p>
     <div class="money-grid">
@@ -889,6 +920,14 @@
   </footer>
 
 </div>
+
+<nav class="bottom-nav">
+  <a href="#journeyCard" data-target="journeyCard"><span class="bn-dot"></span>ホーム</a>
+  <a href="#landSection" data-target="landSection"><span class="bn-dot"></span>土地</a>
+  <a href="#moneySection" data-target="moneySection"><span class="bn-dot"></span>家づくり</a>
+  <a href="#savedLandsCard" data-target="savedLandsCard"><span class="bn-dot"></span>比較</a>
+  <a href="#myPageSection" data-target="myPageSection"><span class="bn-dot"></span>マイページ</a>
+</nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
@@ -1955,6 +1994,27 @@
   } else {
     setStatus('地図をタップ/ドラッグして場所を選ぶか、上で住所を入力してください。', '');
   }
+
+  // ---------- 下部ナビ: クリックでスムーススクロール + スクロール位置に応じて現在地をハイライト ----------
+  const navLinks = Array.from(document.querySelectorAll('.bottom-nav a'));
+  const navTargets = navLinks.map(a => document.getElementById(a.dataset.target)).filter(Boolean);
+  navLinks.forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  function updateActiveNav() {
+    const y = window.scrollY + 120;
+    let activeIdx = 0;
+    navTargets.forEach((el, i) => {
+      if (el.offsetParent !== null && el.offsetTop <= y) activeIdx = i;
+    });
+    navLinks.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+  }
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
 </script>
 
 </body>
