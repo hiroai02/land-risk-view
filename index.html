@@ -24,9 +24,10 @@
     --bg: #f6f5f3;
     --ink: #2a2a28;
     --sub: #6b6a66;
-    --accent: #2c2b28;
-    --accent-dark: #171615;
+    --accent: #1f3a5c;
+    --accent-dark: #142842;
     --accent-ink: #ffffff;
+    --accent-soft: #e8eef4;
     --card: #ffffff;
     --border: #e6e3de;
     --chip-bg: #eeece8;
@@ -52,9 +53,10 @@
       --sub: #a3a099;
       --card: #201f1d;
       --border: #34322e;
-      --accent: #eeece8;
-      --accent-dark: #ffffff;
-      --accent-ink: #171715;
+      --accent: #7ea8d8;
+      --accent-dark: #a9c8ea;
+      --accent-ink: #10233b;
+      --accent-soft: #1c2c3e;
       --chip-bg: #292825;
 
       --ok: #78c39c;
@@ -78,9 +80,10 @@
     --sub: #a3a099;
     --card: #201f1d;
     --border: #34322e;
-    --accent: #eeece8;
-    --accent-dark: #ffffff;
-    --accent-ink: #171715;
+    --accent: #7ea8d8;
+    --accent-dark: #a9c8ea;
+    --accent-ink: #10233b;
+    --accent-soft: #1c2c3e;
     --chip-bg: #292825;
 
     --ok: #78c39c;
@@ -111,14 +114,15 @@
   .wrap { max-width: 640px; margin: 0 auto; padding: 0 18px 40px; }
 
   /* ---------- Header ---------- */
-  header { padding: 28px 0 18px; text-align: center; }
+  header { padding: 20px 0 18px; text-align: center; }
+  .hero-art { width: 100%; max-width: 220px; height: auto; margin: 0 auto 6px; display: block; }
   .badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 0.78rem;
-    color: var(--accent-dark);
-    background: var(--chip-bg);
+    color: var(--accent);
+    background: var(--accent-soft);
     padding: 5px 12px;
     border-radius: 999px;
     margin-bottom: 14px;
@@ -757,6 +761,15 @@
 <div class="wrap">
 
   <header>
+    <svg class="hero-art" viewBox="0 0 320 140" role="img" aria-label="家と地図ピンのイラスト">
+      <path d="M0,122 Q80,100 160,114 T320,104 L320,140 L0,140 Z" fill="var(--accent-soft)"/>
+      <path d="M6,131 Q100,118 165,110 Q210,104 258,66" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="1 9" stroke-linecap="round" opacity="0.6"/>
+      <rect x="62" y="90" width="76" height="30" fill="var(--card)" stroke="var(--accent)" stroke-width="4"/>
+      <path d="M52,98 L100,58 L148,98" fill="var(--card)" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="92" y="100" width="16" height="20" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+      <path d="M234,38 C252,38 264,51 264,68 C264,90 234,116 234,116 C234,116 204,90 204,68 C204,51 216,38 234,38 Z" fill="var(--accent)"/>
+      <circle cx="234" cy="67" r="11" fill="var(--card)"/>
+    </svg>
     <span class="badge">無料・登録不要</span>
     <h1>おうち探しノート</h1>
     <p class="lead">新築の土地選びから引っ越し後の暮らしまで、一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
@@ -1904,6 +1917,13 @@
         '傷・汚れの有無(壁・床・建具)', '建具(ドア・窓)の開閉確認', '水回りの動作確認',
         '電気・コンセントの動作確認', '換気設備の動作確認', '空調(エアコン等)の動作確認',
         '外構の仕上がり確認', '太陽光発電システムの説明(設置している場合)', '引渡し書類一式の受け取り', '保証書の受け取り'
+      ]
+    },
+    genchi: {
+      label: '現地確認', items: [
+        '道路の幅', '車の出入りのしやすさ', '電柱の位置', '側溝・排水の状態',
+        '周辺の騒音', 'におい', '日当たり', '隣家との距離・窓の位置関係',
+        '水路の有無', '交通量(朝夕の時間帯も)'
       ]
     }
   };
