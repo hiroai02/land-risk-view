@@ -651,7 +651,7 @@
     color: var(--sub);
     margin-top: 4px;
   }
-  .summary-headline.attention { border-left-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+  .summary-headline.attention { border-left-color: var(--warn); color: var(--warn); background: var(--warn-bg); }
   .summary-headline.ok { border-left-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
   .summary-headline.unknown { border-left-color: var(--unknown); color: var(--unknown); background: var(--unknown-bg); }
   .summary-headline.pending { color: var(--sub); }
@@ -678,7 +678,7 @@
     white-space: nowrap;
     flex: none;
   }
-  .summary-chip.hit { background: var(--danger-bg); color: var(--danger); }
+  .summary-chip.hit { background: var(--warn-bg); color: var(--warn); }
   .summary-chip.clear { background: var(--ok-bg); color: var(--ok); }
   .summary-chip.pending { background: var(--bg); color: var(--sub); }
   .summary-chip.err { background: var(--unknown-bg); color: var(--unknown); }
@@ -898,8 +898,8 @@
     <div class="gauge-card" id="gaugeCard"></div>
 
     <div class="disclaimer">
-      <strong>⚠️ このツールについて</strong>
-      公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定は一切していません。実際の購入・建築の判断は、必ず自治体の窓口や不動産・建築の専門家に確認してください。
+      <strong>このツールについて</strong>
+      公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定はしていません。実際の購入・建築の判断は、自治体の窓口や不動産・建築の専門家に確認しながら進めることをおすすめします。
     </div>
 
     <div class="checklist">
@@ -951,7 +951,7 @@
     </div>
     <label class="money-budget">ご予算<input type="number" id="mBudget" placeholder="0" inputmode="numeric"><span>万円</span></label>
     <div class="money-result" id="mTotalResult"></div>
-    <p class="money-note">概算です。地盤改良・造成等は現地調査までは金額が確定しないことが多く、「未確認」のまま総額比較を進めると後から予算オーバーに気づくケースがあります。</p>
+    <p class="money-note">あくまで概算の目安です。地盤改良・造成などは現地調査まで金額が確定しないことが多いので、分かった時点で少しずつ更新していくのがおすすめです。</p>
   </div>
 
   <div class="money-card">
@@ -1220,11 +1220,11 @@
   }
 
   const SUMMARY_LABELS = {
-    flood:     { label: '🌊 洪水浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' },
-    dosekiryu: { label: '⛰️ 土石流警戒区域', hit: '⚠️ 区域指定あり', clear: '指定なし(データ上)' },
-    jisuberi:  { label: '🪨 地すべり警戒区域', hit: '⚠️ 区域指定あり', clear: '指定なし(データ上)' },
-    tsunami:   { label: '🌐 津波浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' },
-    hightide:  { label: '🌀 高潮浸水想定', hit: '⚠️ 想定区域あり', clear: '想定なし(データ上)' }
+    flood:     { label: '🌊 洪水浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
+    dosekiryu: { label: '⛰️ 土石流警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
+    jisuberi:  { label: '🪨 地すべり警戒区域', hit: '該当あり', clear: '指定なし(データ上)' },
+    tsunami:   { label: '🌐 津波浸水想定', hit: '該当あり', clear: '想定なし(データ上)' },
+    hightide:  { label: '🌀 高潮浸水想定', hit: '該当あり', clear: '想定なし(データ上)' }
   };
 
   let summaryRequestId = 0;
@@ -1273,13 +1273,13 @@
     if (headline) {
       if (hitCount > 0) {
         headline.className = 'summary-headline attention';
-        headline.innerHTML = `要確認<br><span class="hl-detail">${hitCount}件のハザードで該当が見つかりました。次は該当した項目をタップして詳細を確認しましょう。</span>`;
+        headline.innerHTML = `${hitCount}件、気になる点あり<br><span class="hl-detail">下のタップできる項目から、詳しい内容を見てみてください。</span>`;
       } else if (errCount === HAZARD_LAYERS.length) {
         headline.className = 'summary-headline unknown';
-        headline.innerHTML = `情報不足<br><span class="hl-detail">この地点は確認できませんでした。時間をおいて再度お試しください。</span>`;
+        headline.innerHTML = `確認できませんでした<br><span class="hl-detail">通信状況によることが多いので、少し時間をおいて試してみてください。</span>`;
       } else {
         headline.className = 'summary-headline ok';
-        headline.innerHTML = `確認済み<br><span class="hl-detail">5種類とも該当ハザードは見つかりませんでした(データ上)。次はチェックリストを確認しましょう。</span>`;
+        headline.innerHTML = `気になる点は見つかりませんでした<br><span class="hl-detail">下のチェックリストも見ておくと、さらに安心です。</span>`;
       }
     }
 
@@ -1782,7 +1782,7 @@
     } else if (stage === 'candidate') {
       msg += ' 下に候補の住所を入力してください。地図が出たら、下のチェックリストにも契約前に目を通しておくのがおすすめです。';
     } else {
-      msg += ' 契約直前とのことなので、下で住所を確認したら、必ず「あわせて確認したいこと」のチェックリストと自治体窓口への確認まで済ませてから進めてください。';
+      msg += ' 契約直前とのことなので、下で住所を確認したら、「あわせて確認したいこと」のチェックリストと自治体窓口への確認もあわせて見ておくと、後で困ることが少なくなります。';
     }
 
     if (housing === 'used') {
@@ -1886,7 +1886,7 @@
       el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span> / ご予算まで残り <span class="big">${diff.toLocaleString()}万円</span>`;
       el.className = 'money-result';
     } else {
-      el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span> / ご予算を <span class="big">${Math.abs(diff).toLocaleString()}万円</span> 超過しています`;
+      el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span> / ご予算より <span class="big">${Math.abs(diff).toLocaleString()}万円</span> 多くなっています`;
       el.className = 'money-result over';
     }
   }
