@@ -115,7 +115,10 @@
 
   /* ---------- Header ---------- */
   header { padding: 20px 0 18px; text-align: center; }
-  .hero-art { width: 100%; max-width: 220px; height: auto; margin: 0 auto 6px; display: block; }
+  .hero-photo-wrap { margin: 0 0 12px; border-radius: 16px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .hero-photo { width: 100%; height: 180px; object-fit: cover; display: block; }
+  .hero-credit { text-align: right; font-size: 0.66rem; color: var(--sub); margin: -8px 0 6px; opacity: 0.7; }
+  .hero-credit a { color: inherit; }
   .badge {
     display: inline-flex;
     align-items: center;
@@ -882,15 +885,10 @@
 <div class="wrap">
 
   <header>
-    <svg class="hero-art" viewBox="0 0 320 140" role="img" aria-label="家と地図ピンのイラスト">
-      <path d="M0,122 Q80,100 160,114 T320,104 L320,140 L0,140 Z" fill="var(--accent-soft)"/>
-      <path d="M6,131 Q100,118 165,110 Q210,104 258,66" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="1 9" stroke-linecap="round" opacity="0.6"/>
-      <rect x="62" y="90" width="76" height="30" fill="var(--card)" stroke="var(--accent)" stroke-width="4"/>
-      <path d="M52,98 L100,58 L148,98" fill="var(--card)" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="92" y="100" width="16" height="20" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-      <path d="M234,38 C252,38 264,51 264,68 C264,90 234,116 234,116 C234,116 204,90 204,68 C204,51 216,38 234,38 Z" fill="var(--accent)"/>
-      <circle cx="234" cy="67" r="11" fill="var(--card)"/>
-    </svg>
+    <div class="hero-photo-wrap">
+      <img class="hero-photo" src="https://images.unsplash.com/photo-1628133287836-40bd5453bed1?auto=format&fit=crop&w=1200&q=80" alt="緑の芝生と青空の下に建つ一戸建て住宅" width="1200" height="800" loading="eager">
+    </div>
+    <div class="hero-credit">Photo: <a href="https://unsplash.com/photos/W8z6aiwfi1E" target="_blank" rel="noopener">Ian MacDonald / Unsplash</a></div>
     <span class="badge">無料・登録不要</span>
     <h1>おうち探しノート</h1>
     <p class="lead">新築の土地選びから引っ越し後の暮らしまで、一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
