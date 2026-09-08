@@ -438,14 +438,15 @@
   .journey-next {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 6px;
     background: var(--bg);
     border-left: 3px solid var(--border);
     border-radius: 8px;
-    padding: 11px 13px;
+    padding: 12px 14px;
     font-size: 0.87rem;
+    line-height: 1.6;
   }
-  .journey-next.attention { border-left-color: var(--danger); background: var(--danger-bg); }
+  .journey-next.attention { border-left-color: var(--warn); background: var(--warn-bg); }
   .journey-next.ok { border-left-color: var(--ok); background: var(--ok-bg); }
   .journey-next .jn-label {
     font-size: 0.72rem;
@@ -453,8 +454,20 @@
     color: var(--sub);
     letter-spacing: 0.02em;
   }
-  .journey-next.attention .jn-label { color: var(--danger); }
+  .journey-next.attention .jn-label { color: var(--warn); }
   .journey-next.ok .jn-label { color: var(--ok); }
+  .jn-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    cursor: pointer;
+  }
   .journey-unconfirmed {
     margin-top: 8px;
     font-size: 0.78rem;
@@ -484,12 +497,25 @@
   .gaps-row {
     display: flex;
     justify-content: space-between;
-    gap: 8px;
-    font-size: 0.8rem;
-    padding: 4px 0;
-    color: var(--ink);
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px dashed var(--border);
   }
-  .gaps-row .g-reason { color: var(--sub); font-size: 0.76rem; text-align: right; }
+  .gaps-row:first-of-type { border-top: none; }
+  .gaps-row .g-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+  .gaps-row .g-reason { display: block; color: var(--sub); font-size: 0.78rem; margin-top: 2px; line-height: 1.5; }
+  .gap-btn {
+    flex: none;
+    padding: 7px 13px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--card);
+    color: var(--accent);
+    cursor: pointer;
+  }
 
   /* ---------- Guide (branching consultation) ---------- */
   .guide-card {
@@ -1324,17 +1350,24 @@
     const stepsHtml = JOURNEY_STAGES.map((s, i) =>
       `<div class="journey-step${i === idx ? ' current' : i < idx ? ' done' : ''}">${s}</div>`).join('');
 
-    let nextState = 'neutral', nextText;
+    let nextState = 'neutral', nextText, nextBtn = null;
     if (!karte.guideCompleted) {
-      nextText = 'まず下の質問に答えて、今の状況を整理しましょう。';
+      nextText = '3〜5つの質問に答えると、状況に合わせた案内に変わります。';
+      nextBtn = { label: '質問に答える', target: 'guideCard' };
     } else if (!karte.lastLocation) {
-      nextText = '気になる土地の住所を入力するか、下の地図をタップして確認しましょう。';
+      nextText = '住所を入れると、その土地の防災情報がすぐに見られます。';
+      nextBtn = { label: '住所を入力する', target: 'landSection' };
     } else if (karte.riskSummary && Object.values(karte.riskSummary).some(v => v === 'hit')) {
       nextState = 'attention';
-      nextText = '「該当あり」の項目が出ています。地図のタブとチェックリストで詳しく確認しましょう。';
+      const hitLabels = Object.entries(karte.riskSummary)
+        .filter(([, v]) => v === 'hit')
+        .map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label.replace(/^\S+\s/, '') : k);
+      nextText = `${hitLabels.join('・')}の想定区域に該当しているようです。地図で見ておくと、後で慌てずに済みます。`;
+      nextBtn = { label: '地図で見る', target: 'landSection' };
     } else if (karte.riskSummary) {
       nextState = 'ok';
-      nextText = '大きな懸念は確認されませんでした。次はチェックリストと自治体窓口への確認に進みましょう。';
+      nextText = '大きな懸念は見つかりませんでした。チェックリストも合わせて見ておくと、より安心です。';
+      nextBtn = { label: 'チェックリストを見る', target: 'moneySection' };
     } else {
       nextText = '住所を確認中です…';
     }
@@ -1346,35 +1379,55 @@
     const gaps = computeHomeGaps();
     const gapsHtml = gaps.length ? `
       <div class="gaps-box">
-        <div class="gaps-title">情報が足りない項目(${gaps.length})</div>
-        ${gaps.map(g => `<div class="gaps-row"><span class="g-label">${g.label}</span><span class="g-reason">${g.reason}</span></div>`).join('')}
+        <div class="gaps-title">教えてもらえると、より役立つ情報(${gaps.length})</div>
+        ${gaps.map((g, i) => `
+          <div class="gaps-row">
+            <div><span class="g-label">${g.label}</span><span class="g-reason">${g.reason}</span></div>
+            <button class="gap-btn" data-i="${i}">入力する</button>
+          </div>`).join('')}
       </div>` : '';
 
     el.innerHTML = `
       <div class="journey-title">あなたの家づくり</div>
       <div class="journey-steps">${stepsHtml}</div>
-      <div class="journey-next ${nextState}"><span class="jn-label">今やること</span><span>${nextText}</span></div>
+      <div class="journey-next ${nextState}">
+        <span class="jn-label">今やること</span>
+        <span>${nextText}</span>
+        ${nextBtn ? `<button class="jn-btn">${nextBtn.label}</button>` : ''}
+      </div>
       ${unconfirmedHtml}
       ${gapsHtml}
     `;
+
+    if (nextBtn) {
+      el.querySelector('.jn-btn').addEventListener('click', () => {
+        document.getElementById(nextBtn.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    el.querySelectorAll('.gap-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const gap = gaps[Number(btn.dataset.i)];
+        document.getElementById(gap.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => gap.focusEl && document.getElementById(gap.focusEl)?.focus(), 400);
+      });
+    });
   }
 
   // 家づくりの穴: 「危険」ではなく「情報が足りないだけ」というルールベースの検出(spec section 6)
   function computeHomeGaps() {
     const gaps = [];
-    if (!karte.houseSpec || !karte.houseSpec.hRooms) gaps.push({ label: '間取りの希望', reason: '部屋数などが未登録です' });
-    if (!karte.houseSpec || !karte.houseSpec.hParking) gaps.push({ label: '駐車場の希望', reason: '必要台数が未登録です' });
+    if (!karte.houseSpec || !karte.houseSpec.hRooms) gaps.push({ label: '間取りの希望', reason: '教えてもらえると、土地との相性や必要な広さの目安が分かります', target: 'myPageSection', focusEl: 'hRooms' });
+    if (!karte.houseSpec || !karte.houseSpec.hParking) gaps.push({ label: '駐車場の希望', reason: '台数が分かると、土地の広さが足りるかの目安になります', target: 'myPageSection', focusEl: 'hParking' });
     const land = toNum(document.getElementById('mLand'));
-    const building = toNum(document.getElementById('mBuilding'));
     const exterior = toNum(document.getElementById('mExterior'));
     const ground = toNum(document.getElementById('mGround'));
     const budget = toNum(document.getElementById('mBudget'));
-    if (!budget) gaps.push({ label: '総予算', reason: 'まだ入力されていません' });
-    if (karte.lastLocation && !land) gaps.push({ label: '土地代', reason: '総額シミュレーターに未入力です' });
-    if (karte.lastLocation && !exterior) gaps.push({ label: '外構費', reason: '見落としやすい費用です。総額シミュレーターに追加しましょう' });
-    if (karte.lastLocation && !ground) gaps.push({ label: '地盤改良費', reason: '未確認のままだと総額が変わる可能性があります' });
-    if (!karte.companies || karte.companies.length === 0) gaps.push({ label: '住宅会社', reason: 'まだ1社も登録されていません' });
-    if (!karte.savedLands || karte.savedLands.length === 0) gaps.push({ label: '候補地の保存', reason: '比較するにはまず1件保存しましょう' });
+    if (!budget) gaps.push({ label: '総予算', reason: '入れておくと、これから出す金額と自動で比較できるようになります', target: 'moneySection', focusEl: 'mBudget' });
+    if (karte.lastLocation && !land) gaps.push({ label: '土地代', reason: '分かる範囲で入れると、総額の見通しが立てやすくなります', target: 'moneySection', focusEl: 'mLand' });
+    if (karte.lastLocation && !exterior) gaps.push({ label: '外構費', reason: '見落とされやすい費用なので、早めに把握しておくと安心です', target: 'moneySection', focusEl: 'mExterior' });
+    if (karte.lastLocation && !ground) gaps.push({ label: '地盤改良費', reason: '未確認のままだと、後から総額が変わることがあります', target: 'moneySection', focusEl: 'mGround' });
+    if (!karte.companies || karte.companies.length === 0) gaps.push({ label: '住宅会社', reason: '1社でも登録しておくと、比較や質問リストに使えます', target: 'myPageSection', focusEl: 'cName' });
+    if (!karte.savedLands || karte.savedLands.length === 0) gaps.push({ label: '候補地の保存', reason: '保存しておくと、後で複数の土地を並べて比較できます', target: 'landSection', focusEl: null });
     return gaps;
   }
 
