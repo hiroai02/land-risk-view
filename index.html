@@ -609,6 +609,26 @@
     box-shadow: var(--shadow);
     margin-bottom: 14px;
   }
+  .summary-headline {
+    font-size: 1.05rem;
+    font-weight: 800;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--border);
+    background: var(--bg);
+  }
+  .summary-headline .hl-detail {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--sub);
+    margin-top: 4px;
+  }
+  .summary-headline.attention { border-left-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+  .summary-headline.ok { border-left-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
+  .summary-headline.unknown { border-left-color: var(--unknown); color: var(--unknown); background: var(--unknown-bg); }
+  .summary-headline.pending { color: var(--sub); }
   .summary-title {
     font-size: 0.9rem;
     font-weight: 700;
@@ -1186,6 +1206,7 @@
     const requestId = ++summaryRequestId;
     const summaryEl = document.getElementById('summaryCard');
     summaryEl.innerHTML = `
+      <div class="summary-headline pending">確認中です…</div>
       <div class="summary-title">この地点のハザード一覧</div>
       <div class="summary-note">住所検索の1回で、5種類の公式ハザード指定の有無をまとめて確認できます(確認中…)。</div>
       ${HAZARD_LAYERS.map(l => `
@@ -1219,6 +1240,22 @@
     });
     const note = summaryEl.querySelector('.summary-note');
     if (note) note.textContent = '洪水の「目安」は色の近似マッチングによる自動推定で、公式の確定値ではありません(境界付近では隣のランクとずれる場合があります)。津波・高潮・土砂災害は深さランクまでは判定していません。詳細は下の地図でタブを切り替えて確認してください。「想定なし」はデータ上そう見える、という意味で、リスクが無いことの保証ではありません。';
+
+    const hitCount = Object.values(resultMap).filter(v => v === 'hit').length;
+    const errCount = Object.values(resultMap).filter(v => v === 'error').length;
+    const headline = summaryEl.querySelector('.summary-headline');
+    if (headline) {
+      if (hitCount > 0) {
+        headline.className = 'summary-headline attention';
+        headline.innerHTML = `要確認<br><span class="hl-detail">${hitCount}件のハザードで該当が見つかりました。次は該当した項目をタップして詳細を確認しましょう。</span>`;
+      } else if (errCount === HAZARD_LAYERS.length) {
+        headline.className = 'summary-headline unknown';
+        headline.innerHTML = `情報不足<br><span class="hl-detail">この地点は確認できませんでした。時間をおいて再度お試しください。</span>`;
+      } else {
+        headline.className = 'summary-headline ok';
+        headline.innerHTML = `確認済み<br><span class="hl-detail">5種類とも該当ハザードは見つかりませんでした(データ上)。次はチェックリストを確認しましょう。</span>`;
+      }
+    }
 
     karte.lastLocation = { lat, lng };
     karte.riskSummary = resultMap;
