@@ -1047,12 +1047,22 @@
 
   <div class="money-card">
     <h2>見積チェックポイント</h2>
-    <p class="money-lead">見積書の項目(1行1項目)を貼り付けると、確認した方がよい表現を自動で拾います(AIによる読み取りではなく、キーワード照合です)。</p>
-    <textarea id="quoteInput" rows="5" placeholder="例:&#10;本体工事一式&#10;外構工事 別途&#10;地盤改良費 要相談" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem;"></textarea>
+    <p class="money-lead">見積書の項目(1行1項目)を貼り付けると、確認した方がよい表現を自動で拾います(AIによる読み取りではなく、キーワード照合です)。会社名を入れて保存すると、下の比較表にたまっていきます。</p>
+    <div class="money-grid">
+      <label>会社名(任意)<input type="text" id="quoteCompanyName" placeholder="例: ○○ホーム"></label>
+      <label>見積金額の合計(任意)<input type="number" id="quoteAmount" placeholder="0" inputmode="numeric"><span>万円</span></label>
+    </div>
+    <textarea id="quoteInput" rows="5" placeholder="例:&#10;本体工事一式&#10;外構工事 別途&#10;地盤改良費 要相談" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem; margin-top:8px;"></textarea>
     <div class="guide-cta-row" style="margin:10px 0;">
-      <button class="guide-start-btn" id="quoteCheckBtn">チェックする</button>
+      <button class="guide-start-btn" id="quoteCheckBtn">チェックして比較に保存</button>
     </div>
     <div id="quoteResult"></div>
+  </div>
+
+  <div class="money-card" id="quoteCompareCard" style="display:none;">
+    <h2>見積比較</h2>
+    <p class="money-lead">保存した見積を並べて比較できます(会社名が同じものは上書き保存されます)。</p>
+    <div id="quoteCompareTable"></div>
   </div>
 
   <div class="step-label"><span class="num">4</span>進捗を管理する</div>
@@ -1476,6 +1486,11 @@
         { label: '外構費', done: !!exterior, target: 'moneySection', focusEl: 'mExterior', reason: '見落とされやすい費用なので、早めに把握しておくと安心です' },
         { label: '地盤改良費', done: !!ground, target: 'moneySection', focusEl: 'mGround', reason: '未確認のままだと、後から総額が変わることがあります' }
       );
+    }
+    // 見積の比較は、住宅会社を1社でも登録してから初めて意味を持つので、
+    // それ以前は「該当なし」として対象外にする(完了率の水増しを避ける)
+    if (karte.companies && karte.companies.length) {
+      items.push({ label: '見積の比較', done: !!(karte.quotes && karte.quotes.length >= 2), target: 'quoteCompareCard', focusEl: null, reason: '2社以上を並べると、金額や項目の違いに気づきやすくなります' });
     }
     return items;
   }
@@ -2085,7 +2100,66 @@
       html += `<p class="money-note" style="margin-top:8px;">この見積の記載からは「${missing.join('・')}」に関する項目が見当たりませんでした。含まれていないだけかもしれないので、確認してみてください。</p>`;
     }
     resultEl.innerHTML = html;
+
+    const companyName = document.getElementById('quoteCompanyName').value.trim() || '未分類';
+    const amount = document.getElementById('quoteAmount').value;
+    if (!karte.quotes) karte.quotes = [];
+    const entry = {
+      company: companyName,
+      amount: amount ? Number(amount) : null,
+      flaggedCount: flagged.length,
+      flaggedWords: [...new Set(flagged.map(f => f.word))],
+      missing,
+      checkedAt: new Date().toISOString()
+    };
+    const existingIdx = karte.quotes.findIndex(q => q.company === companyName);
+    if (existingIdx >= 0) karte.quotes[existingIdx] = entry; else karte.quotes.push(entry);
+    saveKarte();
+    renderQuoteCompare();
+    renderJourney();
+    const saveNote = document.createElement('p');
+    saveNote.className = 'money-note';
+    saveNote.style.marginTop = '8px';
+    saveNote.textContent = `「${companyName}」として比較表に保存しました。`;
+    resultEl.appendChild(saveNote);
   });
+
+  // ---------- 見積比較(自己入力の複数見積を並べて比較) ----------
+  function renderQuoteCompare() {
+    if (!karte.quotes) karte.quotes = [];
+    const card = document.getElementById('quoteCompareCard');
+    const table = document.getElementById('quoteCompareTable');
+    if (karte.quotes.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    const sorted = [...karte.quotes].sort((a, b) => {
+      if (a.amount == null && b.amount == null) return 0;
+      if (a.amount == null) return 1;
+      if (b.amount == null) return -1;
+      return a.amount - b.amount;
+    });
+    table.innerHTML = sorted.map(q => {
+      const i = karte.quotes.indexOf(q);
+      return `
+      <div class="company-card">
+        <div class="c-top">
+          <span class="c-name">${q.company}</span>
+          <button data-i="${i}">削除</button>
+        </div>
+        ${q.amount != null ? `<div class="c-price">見積金額 合計 ${q.amount.toLocaleString()}万円</div>` : '<div class="c-price">見積金額 未入力</div>'}
+        <div class="c-note">気になる表現: ${q.flaggedCount > 0 ? `${q.flaggedCount}件(${q.flaggedWords.join('・')})` : 'なし'}</div>
+        ${q.missing && q.missing.length ? `<div class="c-note">記載が見当たらない項目: ${q.missing.join('・')}</div>` : ''}
+      </div>`;
+    }).join('');
+    table.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        karte.quotes.splice(Number(b.dataset.i), 1);
+        saveKarte();
+        renderQuoteCompare();
+        renderJourney();
+      });
+    });
+  }
+  renderQuoteCompare();
 
   // ---------- 段階別チェックリスト(契約前・建築中・引渡し前): 法律判断はせず確認推奨事項として扱う ----------
   const STAGE_CHECKLISTS = {
