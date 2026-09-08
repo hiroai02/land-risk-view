@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>おうち探しノート | 新築の土地選びから引っ越し後まで、みさきと確認</title>
-<meta name="description" content="新築の土地選びから引っ越し後の暮らしまで。まずは住所を入れるだけで、土地の防災リスクを国土交通省・国土地理院の公式オープンデータで無料表示。登録不要、みさきのガイド付き。">
+<title>おうち探しノート | 家づくりの今と、次にやることが分かる</title>
+<meta name="description" content="新築の土地選びから引っ越し後の暮らしまで。まずは住所を入れるだけで、土地の防災リスクを国土交通省・国土地理院の公式オープンデータで無料表示。登録不要。">
 <link rel="canonical" href="https://hiroai02.github.io/land-risk-view/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="おうち探しノート | 新築の土地選びから引っ越し後まで">
@@ -16,49 +16,86 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <style>
+  /* ---------- Design tokens (Light Premium) ---------- */
   :root {
-    --bg: #fdf6f0;
-    --ink: #4a3c34;
-    --sub: #8f7d71;
-    --accent: #ef9c7f;
-    --accent-dark: #a8503a;
+    --bg: #f6f5f3;
+    --ink: #2a2a28;
+    --sub: #6b6a66;
+    --accent: #2c2b28;
+    --accent-dark: #171615;
     --accent-ink: #ffffff;
     --card: #ffffff;
-    --border: #f1e2d3;
-    --warn-bg: #fff5e3;
-    --warn-border: #ecc26b;
-    --warn-ink: #5c4310;
-    --chip-bg: #fbe4da;
-    --shadow: 0 2px 6px rgba(180,120,90,.10), 0 10px 24px rgba(180,120,90,.13);
+    --border: #e6e3de;
+    --chip-bg: #eeece8;
+
+    --ok: #3f7a5c;
+    --ok-bg: #e9f2ec;
+    --warn: #96690f;
+    --warn-bg: #f8f0e0;
+    --warn-border: #e3c98a;
+    --warn-ink: #7a5310;
+    --danger: #a23b31;
+    --danger-bg: #f7eae8;
+    --danger-border: #e3b3ac;
+    --unknown: #5a5f78;
+    --unknown-bg: #edeef3;
+
+    --shadow: 0 1px 2px rgba(30,28,25,.05), 0 8px 20px rgba(30,28,25,.06);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #2b2320;
-      --ink: #f6ece3;
-      --sub: #c2ac9e;
-      --card: #362c27;
-      --border: #4a3c33;
-      --warn-bg: #3c3120;
-      --warn-border: #6b5a1f;
-      --warn-ink: #edc17c;
-      --chip-bg: #4a372e;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+      --bg: #171715;
+      --ink: #eeece8;
+      --sub: #a3a099;
+      --card: #201f1d;
+      --border: #34322e;
+      --accent: #eeece8;
+      --accent-dark: #ffffff;
+      --accent-ink: #171715;
+      --chip-bg: #292825;
+
+      --ok: #78c39c;
+      --ok-bg: #1c2b23;
+      --warn: #e0b563;
+      --warn-bg: #322a18;
+      --warn-border: #6b5a30;
+      --warn-ink: #e8c98a;
+      --danger: #e2938a;
+      --danger-bg: #35211f;
+      --danger-border: #6b3a34;
+      --unknown: #a7abc4;
+      --unknown-bg: #22222c;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.35);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #2b2320;
-    --ink: #f6ece3;
-    --sub: #c2ac9e;
-    --card: #362c27;
-    --border: #4a3c33;
-    --warn-bg: #3c3120;
-    --warn-border: #6b5a1f;
-    --warn-ink: #edc17c;
-    --chip-bg: #4a372e;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    --bg: #171715;
+    --ink: #eeece8;
+    --sub: #a3a099;
+    --card: #201f1d;
+    --border: #34322e;
+    --accent: #eeece8;
+    --accent-dark: #ffffff;
+    --accent-ink: #171715;
+    --chip-bg: #292825;
+
+    --ok: #78c39c;
+    --ok-bg: #1c2b23;
+    --warn: #e0b563;
+    --warn-bg: #322a18;
+    --warn-border: #6b5a30;
+    --warn-ink: #e8c98a;
+    --danger: #e2938a;
+    --danger-bg: #35211f;
+    --danger-border: #6b3a34;
+    --unknown: #a7abc4;
+    --unknown-bg: #22222c;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.35);
   }
 
   * { box-sizing: border-box; }
@@ -66,8 +103,9 @@
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
-    line-height: 1.65;
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.75;
+    font-size: 15.5px;
     -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 640px; margin: 0 auto; padding: 0 18px 40px; }
@@ -97,36 +135,23 @@
     margin: 0 auto;
     max-width: 46ch;
   }
-  .host-avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    border: 3px solid var(--card);
-    box-shadow: var(--shadow);
-    object-fit: cover;
-    margin-bottom: 8px;
-  }
-  .host-avatar.sm {
-    width: 34px; height: 34px;
-    border-width: 2px;
-    flex: none;
-  }
+  .host-avatar { display: none; }
   .host-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    display: block;
   }
   .host-bubble {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px 14px 14px 14px;
-    padding: 10px 13px;
+    padding: 0;
   }
   .host-name {
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: var(--accent-dark);
-    margin-bottom: 3px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--sub);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .host-bubble > div:last-child {
+    color: var(--ink);
+    font-size: 0.92rem;
   }
 
   /* ---------- Step 1: search ---------- */
@@ -214,7 +239,8 @@
     font-weight: 700;
     color: var(--ink);
   }
-  .money-grid input, .money-budget input {
+  .money-grid input, .money-budget input,
+  .money-grid select, .money-grid textarea, .money-budget textarea {
     padding: 10px 12px;
     font-size: 0.95rem;
     border: 1px solid var(--border);
@@ -222,7 +248,29 @@
     background: var(--bg);
     color: var(--ink);
     width: 100%;
+    font-family: inherit;
   }
+  .company-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    font-size: 0.86rem;
+  }
+  .company-card .c-top { display: flex; justify-content: space-between; align-items: center; }
+  .company-card .c-name { font-weight: 700; }
+  .company-card .c-price { color: var(--sub); font-size: 0.8rem; }
+  .company-card .c-note { margin-top: 4px; color: var(--sub); white-space: pre-wrap; }
+  .company-card button { font-size: 0.76rem; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: pointer; }
+  .quote-flag-row {
+    display: flex;
+    gap: 8px;
+    padding: 7px 0;
+    border-top: 1px dashed var(--border);
+    font-size: 0.85rem;
+  }
+  .quote-flag-row:first-child { border-top: none; }
+  .quote-flag-row .qf-word { font-weight: 700; color: var(--warn-ink); flex: none; }
   .money-grid label span, .money-budget span {
     position: absolute;
     right: 10px;
@@ -239,7 +287,7 @@
     color: var(--accent-dark);
     margin-bottom: 8px;
   }
-  .money-result.over { background: var(--warn-bg); color: var(--warn-ink); }
+  .money-result.over { background: var(--danger-bg); color: var(--danger); }
   .money-result .big { font-size: 1.15rem; font-weight: 800; }
   .money-note { font-size: 0.76rem; color: var(--sub); margin: 0; }
   .qgen-list { list-style: none; margin: 0 0 4px; padding: 0; }
@@ -253,9 +301,34 @@
   .qgen-list li:first-child { border-top: none; }
   .qgen-list li::before { content: "・"; color: var(--accent); flex: none; }
   .qgen-list.checkable li::before { content: none; }
-  .qgen-list.checkable li { align-items: center; cursor: pointer; }
+  .qgen-list.checkable li { display: block; }
+  .qgen-list.checkable .check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .qgen-list.checkable input[type=checkbox] { width: 18px; height: 18px; flex: none; }
-  .qgen-list.checkable li.checked span { color: var(--sub); text-decoration: line-through; }
+  .qgen-list.checkable li.checked .check-row span { color: var(--sub); text-decoration: line-through; }
+  .qgen-list.checkable .check-row span { flex: 1; }
+  .note-toggle {
+    flex: none;
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--sub);
+    cursor: pointer;
+  }
+  .note-input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px 10px;
+    font-size: 0.83rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--ink);
+    resize: vertical;
+    min-height: 44px;
+  }
 
   .saved-land-row {
     display: flex;
@@ -311,14 +384,24 @@
   .journey-step.done { background: var(--chip-bg); color: var(--accent-dark); }
   .journey-next {
     display: flex;
-    gap: 10px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
     background: var(--bg);
-    border-radius: 12px;
+    border-left: 3px solid var(--border);
+    border-radius: 8px;
     padding: 11px 13px;
     font-size: 0.87rem;
   }
-  .journey-next .ico { flex: none; }
+  .journey-next.attention { border-left-color: var(--danger); background: var(--danger-bg); }
+  .journey-next.ok { border-left-color: var(--ok); background: var(--ok-bg); }
+  .journey-next .jn-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--sub);
+    letter-spacing: 0.02em;
+  }
+  .journey-next.attention .jn-label { color: var(--danger); }
+  .journey-next.ok .jn-label { color: var(--ok); }
   .journey-unconfirmed {
     margin-top: 8px;
     font-size: 0.78rem;
@@ -475,10 +558,10 @@
     white-space: nowrap;
     flex: none;
   }
-  .summary-chip.hit { background: var(--warn-bg); color: var(--warn-ink); }
-  .summary-chip.clear { background: var(--chip-bg); color: var(--accent-dark); }
+  .summary-chip.hit { background: var(--danger-bg); color: var(--danger); }
+  .summary-chip.clear { background: var(--ok-bg); color: var(--ok); }
   .summary-chip.pending { background: var(--bg); color: var(--sub); }
-  .summary-chip.err { background: var(--bg); color: var(--sub); }
+  .summary-chip.err { background: var(--unknown-bg); color: var(--unknown); }
   .summary-row.clickable { cursor: pointer; }
   .summary-row.clickable:hover .s-label { text-decoration: underline; }
 
@@ -580,50 +663,6 @@
   }
   .disclaimer strong { display: block; margin-bottom: 4px; }
 
-  /* ---------- Product recommendation card (contextual, hazard-triggered) ---------- */
-  .product-intro { font-size: 0.87rem; margin-bottom: 14px; }
-  .product-item {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 14px;
-    margin-bottom: 12px;
-  }
-  .product-item:last-of-type { margin-bottom: 4px; }
-  .product-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-  .product-type-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--accent-dark);
-    background: var(--chip-bg);
-    padding: 2px 9px;
-    border-radius: 999px;
-    flex: none;
-  }
-  .product-name { font-size: 0.92rem; font-weight: 700; }
-  .product-meta { font-size: 0.8rem; color: var(--sub); margin-bottom: 8px; }
-  .product-pc { font-size: 0.85rem; margin: 6px 0; }
-  .product-pc b { color: var(--accent-dark); }
-  .product-fit { font-size: 0.82rem; color: var(--sub); margin-top: 8px; }
-  .product-buy-row { margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .product-buy-btn {
-    display: inline-block;
-    padding: 9px 16px;
-    font-size: 0.84rem;
-    font-weight: 700;
-    background: var(--accent);
-    color: var(--accent-ink);
-    border-radius: 9px;
-    text-decoration: none;
-  }
-  .product-summary {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 11px 13px;
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-  .product-assoc-note { font-size: 0.74rem; color: var(--sub); margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
-
   .checklist {
     background: var(--card);
     border: 1px solid var(--border);
@@ -666,11 +705,9 @@
 <div class="wrap">
 
   <header>
-    <img class="host-avatar" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="64" height="64" loading="lazy">
-    <br>
-    <span class="badge">🌱 無料・登録不要</span>
-    <h1>🏠 おうち探しノート</h1>
-    <p class="lead">新築の土地選びから引っ越し後の暮らしまで、みさきと一緒に一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
+    <span class="badge">無料・登録不要</span>
+    <h1>おうち探しノート</h1>
+    <p class="lead">新築の土地選びから引っ越し後の暮らしまで、一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
   </header>
 
   <div class="journey-card" id="journeyCard"></div>
@@ -704,8 +741,6 @@
       <strong>⚠️ このツールについて</strong>
       公式ハザードマップの色分けをそのまま重ねて見やすくしているだけで、「安全」「危険」といった独自の判定は一切していません。実際の購入・建築の判断は、必ず自治体の窓口や不動産・建築の専門家に確認してください。
     </div>
-
-    <div class="guide-card" id="productsCard" style="display:none;"></div>
 
     <div class="checklist">
       <h2>あわせて確認したいこと</h2>
@@ -745,7 +780,7 @@
   <div class="step-label"><span class="num">3</span>お金を整理する</div>
 
   <div class="money-card">
-    <h2>💰 総額シミュレーター</h2>
+    <h2>総額シミュレーター</h2>
     <p class="money-lead">土地価格だけで比べず、諸費用込みの総額とご予算を見比べられます。</p>
     <div class="money-grid">
       <label>土地代<input type="number" id="mLand" placeholder="0" inputmode="numeric"><span>万円</span></label>
@@ -760,7 +795,7 @@
   </div>
 
   <div class="money-card">
-    <h2>🏦 住宅ローン返済シミュレーター(簡易)</h2>
+    <h2>住宅ローン返済シミュレーター(簡易)</h2>
     <div class="money-grid">
       <label>借入額<input type="number" id="lPrincipal" placeholder="0" inputmode="numeric"><span>万円</span></label>
       <label>年利<input type="number" id="lRate" placeholder="0" step="0.01" inputmode="decimal"><span>%</span></label>
@@ -770,8 +805,8 @@
     <p class="money-note">元利均等返済・ボーナス返済なしの簡易計算です。実際の金利は固定/変動、金融機関、審査結果で変わります。「借りられる金額」と「無理なく返せる金額」は別物で、無理なく返せる目安は年収や他の借入状況によって金融機関ごとに基準が異なります。正確な借入可能額は金融機関の事前審査でご確認ください。</p>
   </div>
 
-  <div class="money-card">
-    <h2>🏛️ 補助金について</h2>
+  <div class="money-card" id="subsidyCard">
+    <h2>補助金について</h2>
     <div class="host-row">
       <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
       <div class="host-bubble">
@@ -785,10 +820,59 @@
     </div>
   </div>
 
+  <div class="money-card">
+    <h2>間取り・仕様の希望</h2>
+    <p class="money-lead">一度入力すれば、家づくりカルテに保存され、質問リスト等でも参照します。</p>
+    <div class="money-grid">
+      <label>部屋数(目安)<input type="number" id="hRooms" placeholder="0" inputmode="numeric"><span>室</span></label>
+      <label>延床(目安)<input type="number" id="hTsubo" placeholder="0" inputmode="numeric"><span>坪</span></label>
+      <label>駐車台数<input type="number" id="hParking" placeholder="0" inputmode="numeric"><span>台</span></label>
+      <label>階数
+        <select id="hFloors"><option value="">選択</option><option value="平屋">平屋</option><option value="2階建て">2階建て</option><option value="3階建て以上">3階建て以上</option><option value="未定">未定</option></select>
+      </label>
+      <label>庭
+        <select id="hGarden"><option value="">選択</option><option value="欲しい">欲しい</option><option value="無くてもよい">無くてもよい</option><option value="未定">未定</option></select>
+      </label>
+      <label>太陽光
+        <select id="hSolar"><option value="">選択</option><option value="設置したい">設置したい</option><option value="不要">不要</option><option value="未定">未定</option></select>
+      </label>
+    </div>
+    <label class="money-budget" style="border-top:none; padding-top:0;">こだわり・メモ(断熱・耐震・収納など)
+      <textarea id="hMemo" rows="2" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem;"></textarea>
+    </label>
+    <div class="money-note" id="hSaveStatus"></div>
+  </div>
+
+  <div class="money-card">
+    <h2>住宅会社の比較メモ</h2>
+    <p class="money-lead">検討している会社をご自身で追加して比較できます(外部データベースとの連携はありません)。</p>
+    <div class="money-grid">
+      <label>会社名<input type="text" id="cName" placeholder="例: ○○ホーム"></label>
+      <label>価格帯の目安<input type="text" id="cPrice" placeholder="例: 坪60万円〜"></label>
+    </div>
+    <label class="money-budget" style="border-top:none; padding-top:0;">良い点・気になる点・紹介料の関係の有無など
+      <textarea id="cNote" rows="2" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem;"></textarea>
+    </label>
+    <div class="guide-cta-row" style="margin-bottom:10px;">
+      <button class="guide-start-btn" id="companyAddBtn">追加する</button>
+    </div>
+    <div id="companyList"></div>
+  </div>
+
+  <div class="money-card">
+    <h2>見積チェックポイント</h2>
+    <p class="money-lead">見積書の項目(1行1項目)を貼り付けると、確認した方がよい表現を自動で拾います(AIによる読み取りではなく、キーワード照合です)。</p>
+    <textarea id="quoteInput" rows="5" placeholder="例:&#10;本体工事一式&#10;外構工事 別途&#10;地盤改良費 要相談" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem;"></textarea>
+    <div class="guide-cta-row" style="margin:10px 0;">
+      <button class="guide-start-btn" id="quoteCheckBtn">チェックする</button>
+    </div>
+    <div id="quoteResult"></div>
+  </div>
+
   <div class="step-label"><span class="num">4</span>進捗を管理する</div>
 
   <div class="money-card">
-    <h2>📋 段階別チェックリスト</h2>
+    <h2>段階別チェックリスト</h2>
     <p class="money-lead">契約前・建築中・引渡し前で確認したい項目です。チェック状態は端末に保存されます。法律判断はしません(あくまで確認推奨事項です)。</p>
     <div class="tabs" id="stageTabs"></div>
     <ul class="qgen-list" id="stageList" style="margin-top:8px;"></ul>
@@ -796,7 +880,7 @@
   </div>
 
   <div class="money-card" id="savedLandsCard" style="display:none;">
-    <h2>📍 保存した候補地の比較</h2>
+    <h2>保存した候補地の比較</h2>
     <div id="savedLandsTable"></div>
   </div>
 
@@ -980,7 +1064,7 @@
     const requestId = ++summaryRequestId;
     const summaryEl = document.getElementById('summaryCard');
     summaryEl.innerHTML = `
-      <div class="summary-title">🔎 この地点のハザード一覧</div>
+      <div class="summary-title">この地点のハザード一覧</div>
       <div class="summary-note">住所検索の1回で、5種類の公式ハザード指定の有無をまとめて確認できます(確認中…)。</div>
       ${HAZARD_LAYERS.map(l => `
         <div class="summary-row" data-key="${l.key}">
@@ -1019,7 +1103,6 @@
     saveKarte();
     renderJourney();
     renderQuestionGenerator(resultMap);
-    renderFloodProducts(resultMap);
 
     const saveBtn = document.getElementById('saveLandBtn');
     if (saveBtn) {
@@ -1069,62 +1152,6 @@
     };
   }
 
-  // ---------- 浸水対策グッズの商品紹介(問題提起→解決方法→商品の順を守る) ----------
-  // 商品データは products.json に一本化(捏造禁止・実データのみ)。ハザードが「該当あり」の
-  // 時だけ表示し、「該当なし」の人には売り込まない(原文29項目の思想に基づく)。
-  let floodProductsData = null;
-  async function loadFloodProducts() {
-    if (floodProductsData) return floodProductsData;
-    try {
-      const res = await fetch('products.json');
-      if (!res.ok) throw new Error('load failed');
-      floodProductsData = await res.json();
-    } catch (e) {
-      floodProductsData = null;
-    }
-    return floodProductsData;
-  }
-
-  async function renderFloodProducts(riskSummary) {
-    const card = document.getElementById('productsCard');
-    const hasFloodRisk = riskSummary && (riskSummary.flood === 'hit' || riskSummary.tsunami === 'hit' || riskSummary.hightide === 'hit');
-    if (!hasFloodRisk) { card.style.display = 'none'; return; }
-
-    const data = await loadFloodProducts();
-    if (!data || !data.products || !data.products.length) { card.style.display = 'none'; return; }
-
-    const itemsHtml = data.products.map(p => `
-      <div class="product-item">
-        <div class="product-head">
-          <span class="product-type-badge">${p.type}</span>
-          <span class="product-name">${p.name}</span>
-        </div>
-        <div class="product-meta">★${p.rating}(${p.reviewCount}件) ・ ¥${p.price.toLocaleString()}(${p.priceCheckedAt}時点、変動する可能性があります)</div>
-        <div class="product-pc"><b>良い点:</b> ${p.pros.join(' / ')}</div>
-        <div class="product-pc"><b>気になる点:</b> ${p.cons.join(' / ')}</div>
-        <div class="product-fit">向いている人: ${p.goodFor}<br>向いていない人: ${p.notFor}</div>
-        <div class="product-buy-row">
-          <a class="product-buy-btn" href="${p.affiliateUrl}" target="_blank" rel="noopener sponsored">Amazonで見る ›</a>
-        </div>
-      </div>`).join('');
-
-    card.innerHTML = `
-      <div class="host-row">
-        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
-        <div class="host-bubble">
-          <div class="host-name">みさき</div>
-          <div>この地点は洪水・津波・高潮のいずれかの想定区域に該当していました。「必ず買うべき」ということではありませんが、自治体への確認と合わせて、家庭でできる浸水対策グッズも知っておくと安心です。実際にAmazonで販売されている3タイプを、価格・実レビューで比較しました。</div>
-        </div>
-      </div>
-      ${itemsHtml}
-      <div class="product-summary">
-        <b>状況別のおすすめ:</b> まず手軽に備えたいなら吸水土のう、玄関の間口に合わせてしっかり備えたいなら止水板、工具を使わず室内から設置したいならとめっぱLightが候補になります。3つとも完全な止水を保証するものではないため、自治体のハザードマップ・避難情報と合わせてご確認ください。
-      </div>
-      <div class="product-assoc-note">当サイトはAmazonアソシエイト・プログラムの参加者です。上記リンクを経由した購入により、当サイトに紹介料が支払われることがあります(お客様の負担額は変わりません)。価格・評価件数は${data.lastUpdated}時点の確認情報です。</div>
-    `;
-    card.style.display = '';
-  }
-
   const JOURNEY_STAGES = ['土地', '予算', '住宅会社', 'ローン', '間取り', '見積', '契約', '建築', '引渡し', '入居'];
 
   function journeyStageIndex() {
@@ -1138,15 +1165,16 @@
     const stepsHtml = JOURNEY_STAGES.map((s, i) =>
       `<div class="journey-step${i === idx ? ' current' : i < idx ? ' done' : ''}">${s}</div>`).join('');
 
-    let nextIco = '👉', nextText;
+    let nextState = 'neutral', nextText;
     if (!karte.guideCompleted) {
       nextText = 'まず下の質問に答えて、今の状況を整理しましょう。';
     } else if (!karte.lastLocation) {
       nextText = '気になる土地の住所を入力するか、下の地図をタップして確認しましょう。';
     } else if (karte.riskSummary && Object.values(karte.riskSummary).some(v => v === 'hit')) {
-      nextIco = '⚠️';
+      nextState = 'attention';
       nextText = '「該当あり」の項目が出ています。地図のタブとチェックリストで詳しく確認しましょう。';
     } else if (karte.riskSummary) {
+      nextState = 'ok';
       nextText = '大きな懸念は確認されませんでした。次はチェックリストと自治体窓口への確認に進みましょう。';
     } else {
       nextText = '住所を確認中です…';
@@ -1157,9 +1185,9 @@
       : '';
 
     el.innerHTML = `
-      <div class="journey-title">🏡 あなたの家づくり</div>
+      <div class="journey-title">あなたの家づくり</div>
       <div class="journey-steps">${stepsHtml}</div>
-      <div class="journey-next"><span class="ico">${nextIco}</span><span>${nextText}</span></div>
+      <div class="journey-next ${nextState}"><span class="jn-label">今やること</span><span>${nextText}</span></div>
       ${unconfirmedHtml}
     `;
   }
@@ -1200,7 +1228,7 @@
     }
 
     gaugeEl.innerHTML = `
-      <div class="gauge-title">🎚️ 色の見方</div>
+      <div class="gauge-title">色の見方</div>
       ${rowsHtml}
       <div class="gauge-footnote">${g.source} 色が付いていない場所が「リスク無し」を意味するとは限りません。正確な凡例は<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html" target="_blank" rel="noopener">公式サイト</a>でご確認ください。</div>
     `;
@@ -1273,6 +1301,11 @@
       localLink.href = `https://www.google.com/search?q=${sq}`;
       localLink.textContent = `「${label}」周辺の自治体の補助金を検索 →`;
       localLink.style.display = 'inline-block';
+      const subsidyCard = document.getElementById('subsidyCard');
+      if (subsidyCard) {
+        subsidyCard.classList.add('highlight-pulse');
+        setTimeout(() => subsidyCard.classList.remove('highlight-pulse'), 3300);
+      }
     }
   }
 
@@ -1647,6 +1680,103 @@
   });
   renderLoanSimulator();
 
+  // ---------- 間取り・仕様の希望(家づくりカルテに保存) ----------
+  const HOUSE_SPEC_FIELDS = ['hRooms', 'hTsubo', 'hParking', 'hFloors', 'hGarden', 'hSolar', 'hMemo'];
+  function loadHouseSpec() {
+    if (!karte.houseSpec) return;
+    HOUSE_SPEC_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && karte.houseSpec[id] !== undefined) el.value = karte.houseSpec[id];
+    });
+  }
+  function saveHouseSpec() {
+    karte.houseSpec = {};
+    HOUSE_SPEC_FIELDS.forEach(id => { karte.houseSpec[id] = document.getElementById(id).value; });
+    saveKarte();
+    const status = document.getElementById('hSaveStatus');
+    status.textContent = '保存しました(家づくりカルテに記録、質問リスト等でも参照します)';
+    setTimeout(() => { status.textContent = ''; }, 2500);
+  }
+  HOUSE_SPEC_FIELDS.forEach(id => {
+    document.getElementById(id).addEventListener('change', saveHouseSpec);
+  });
+  loadHouseSpec();
+
+  // ---------- 住宅会社の比較メモ(自己入力、外部データなし) ----------
+  function renderCompanyList() {
+    if (!karte.companies) karte.companies = [];
+    const el = document.getElementById('companyList');
+    el.innerHTML = karte.companies.map((c, i) => `
+      <div class="company-card">
+        <div class="c-top">
+          <span class="c-name">${c.name}</span>
+          <button data-i="${i}">削除</button>
+        </div>
+        ${c.price ? `<div class="c-price">${c.price}</div>` : ''}
+        ${c.note ? `<div class="c-note">${c.note}</div>` : ''}
+      </div>`).join('');
+    el.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        karte.companies.splice(Number(b.dataset.i), 1);
+        saveKarte();
+        renderCompanyList();
+      });
+    });
+  }
+  document.getElementById('companyAddBtn').addEventListener('click', () => {
+    const name = document.getElementById('cName').value.trim();
+    if (!name) return;
+    if (!karte.companies) karte.companies = [];
+    karte.companies.push({
+      name,
+      price: document.getElementById('cPrice').value.trim(),
+      note: document.getElementById('cNote').value.trim()
+    });
+    saveKarte();
+    document.getElementById('cName').value = '';
+    document.getElementById('cPrice').value = '';
+    document.getElementById('cNote').value = '';
+    renderCompanyList();
+  });
+  renderCompanyList();
+
+  // ---------- 見積チェックポイント(キーワード照合のみ、AI読み取りではない) ----------
+  const QUOTE_FLAG_WORDS = [
+    { word: '一式', note: '内訳が分からない金額です。何が含まれるか明細を確認しましょう。' },
+    { word: '別途', note: 'この見積に含まれていない費用です。総額に加算されるか確認しましょう。' },
+    { word: '要相談', note: '金額が未確定です。契約前に確定させましょう。' },
+    { word: 'オプション', note: '標準仕様ではない可能性があります。標準との差額を確認しましょう。' },
+    { word: '追加工事', note: '想定外の追加費用が発生する可能性があります。' },
+    { word: '諸経費', note: '内訳が不明瞭なことが多い項目です。何が含まれるか確認しましょう。' }
+  ];
+  document.getElementById('quoteCheckBtn').addEventListener('click', () => {
+    const lines = document.getElementById('quoteInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const resultEl = document.getElementById('quoteResult');
+    if (lines.length === 0) { resultEl.innerHTML = '<p class="money-note">見積の項目を1行ずつ入力してください。</p>'; return; }
+    const flagged = [];
+    lines.forEach(line => {
+      QUOTE_FLAG_WORDS.forEach(f => {
+        if (line.includes(f.word)) flagged.push({ line, word: f.word, note: f.note });
+      });
+    });
+    let html = '';
+    if (flagged.length) {
+      html += flagged.map(f => `
+        <div class="quote-flag-row">
+          <span class="qf-word">「${f.word}」</span>
+          <span>${f.line} — ${f.note}</span>
+        </div>`).join('');
+    } else {
+      html += '<p class="money-note">気になる表現は見つかりませんでした(このチェックは限られたキーワードのみを見ています。表現に含まれない不明瞭な項目は拾えません)。</p>';
+    }
+    const allText = lines.join(' ');
+    const missing = ['地盤', '外構', '登記', '水道'].filter(k => !allText.includes(k));
+    if (missing.length) {
+      html += `<p class="money-note" style="margin-top:8px;">この見積の記載からは「${missing.join('・')}」に関する項目が見当たりませんでした。含まれていないだけかもしれないので、確認してみてください。</p>`;
+    }
+    resultEl.innerHTML = html;
+  });
+
   // ---------- 段階別チェックリスト(契約前・建築中・引渡し前): 法律判断はせず確認推奨事項として扱う ----------
   const STAGE_CHECKLISTS = {
     keiyaku: {
@@ -1684,6 +1814,11 @@
     });
   }
 
+  function normalizeCheckEntry(raw) {
+    if (raw && typeof raw === 'object') return { checked: !!raw.checked, note: raw.note || '' };
+    return { checked: !!raw, note: '' };
+  }
+
   function renderStageChecklist() {
     if (!karte.stageChecks) karte.stageChecks = {};
     if (!karte.stageChecks[currentStage]) karte.stageChecks[currentStage] = {};
@@ -1691,21 +1826,53 @@
     const items = STAGE_CHECKLISTS[currentStage].items;
     const list = document.getElementById('stageList');
     list.className = 'qgen-list checkable';
-    list.innerHTML = items.map((item, i) => `
-      <li class="${checks[i] ? 'checked' : ''}" data-i="${i}">
-        <input type="checkbox" ${checks[i] ? 'checked' : ''}>
-        <span>${item}</span>
-      </li>`).join('');
-    list.querySelectorAll('li').forEach(li => {
-      li.addEventListener('click', (e) => {
-        const i = li.dataset.i;
-        checks[i] = !checks[i];
+    list.innerHTML = items.map((item, i) => {
+      const entry = normalizeCheckEntry(checks[i]);
+      return `
+      <li class="${entry.checked ? 'checked' : ''}" data-i="${i}">
+        <div class="check-row" data-i="${i}">
+          <input type="checkbox" ${entry.checked ? 'checked' : ''}>
+          <span>${item}</span>
+          <button class="note-toggle" data-i="${i}" type="button">${entry.note ? '📝 メモあり' : '📝 メモ'}</button>
+        </div>
+        <textarea class="note-input" data-i="${i}" placeholder="確認した内容をメモ(任意)" style="display:${entry.note ? '' : 'none'};">${entry.note}</textarea>
+      </li>`;
+    }).join('');
+
+    list.querySelectorAll('.check-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.note-toggle')) return;
+        const i = row.dataset.i;
+        const entry = normalizeCheckEntry(checks[i]);
+        entry.checked = !entry.checked;
+        checks[i] = entry;
         karte.stageChecks[currentStage] = checks;
         saveKarte();
         renderStageChecklist();
       });
     });
-    const doneCount = items.filter((_, i) => checks[i]).length;
+    list.querySelectorAll('.note-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = btn.dataset.i;
+        const ta = list.querySelector(`.note-input[data-i="${i}"]`);
+        ta.style.display = ta.style.display === 'none' ? '' : 'none';
+        if (ta.style.display !== 'none') ta.focus();
+      });
+    });
+    list.querySelectorAll('.note-input').forEach(ta => {
+      ta.addEventListener('click', (e) => e.stopPropagation());
+      ta.addEventListener('input', () => {
+        const i = ta.dataset.i;
+        const entry = normalizeCheckEntry(checks[i]);
+        entry.note = ta.value;
+        checks[i] = entry;
+        karte.stageChecks[currentStage] = checks;
+        saveKarte();
+      });
+    });
+
+    const doneCount = items.filter((_, i) => normalizeCheckEntry(checks[i]).checked).length;
     document.getElementById('stageProgress').textContent = `${doneCount}/${items.length}件 確認済み`;
   }
 
