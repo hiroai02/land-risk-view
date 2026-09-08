@@ -483,10 +483,36 @@
     margin-right: 6px;
   }
 
+  .progress-box { margin-top: 12px; }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: var(--sub);
+    margin-bottom: 5px;
+  }
+  .progress-count { font-weight: 700; color: var(--ink); }
+  .progress-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
   .gaps-box {
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px dashed var(--border);
+  }
+  .gaps-box.gaps-complete {
+    color: var(--ok);
+    font-size: 0.85rem;
+    font-weight: 600;
   }
   .gaps-title {
     font-size: 0.72rem;
@@ -1376,20 +1402,31 @@
       ? `<div class="journey-unconfirmed"><span class="chip">未確認 ${karte.unconfirmed.length}件</span>${karte.unconfirmed.map(u => u.label).join(' / ')}</div>`
       : '';
 
-    const gaps = computeHomeGaps();
+    const allItems = computeChecklistItems();
+    const gaps = allItems.filter(it => !it.done);
+    const doneCount = allItems.length - gaps.length;
+    const pct = Math.round((doneCount / allItems.length) * 100);
+
+    const progressHtml = `
+      <div class="progress-box">
+        <div class="progress-top"><span>ここまでの進み具合</span><span class="progress-count">${doneCount}/${allItems.length}</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+
     const gapsHtml = gaps.length ? `
       <div class="gaps-box">
-        <div class="gaps-title">教えてもらえると、より役立つ情報(${gaps.length})</div>
-        ${gaps.map((g, i) => `
+        <div class="gaps-title">次に教えてもらえると、さらに役立ちます</div>
+        ${gaps.map((g) => `
           <div class="gaps-row">
             <div><span class="g-label">${g.label}</span><span class="g-reason">${g.reason}</span></div>
-            <button class="gap-btn" data-i="${i}">入力する</button>
+            <button class="gap-btn" data-target="${g.target}" data-focus="${g.focusEl || ''}">${g.focusEl || g.target === 'guideCard' ? '入力する' : '見る'}</button>
           </div>`).join('')}
-      </div>` : '';
+      </div>` : `<div class="gaps-box gaps-complete">今のところ、確認しておきたい項目はすべて埋まっています。</div>`;
 
     el.innerHTML = `
       <div class="journey-title">あなたの家づくり</div>
       <div class="journey-steps">${stepsHtml}</div>
+      ${progressHtml}
       <div class="journey-next ${nextState}">
         <span class="jn-label">今やること</span>
         <span>${nextText}</span>
@@ -1406,29 +1443,45 @@
     }
     el.querySelectorAll('.gap-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const gap = gaps[Number(btn.dataset.i)];
-        document.getElementById(gap.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => gap.focusEl && document.getElementById(gap.focusEl)?.focus(), 400);
+        const target = btn.dataset.target;
+        const focus = btn.dataset.focus;
+        document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => focus && document.getElementById(focus)?.focus(), 400);
       });
     });
   }
 
   // 家づくりの穴: 「危険」ではなく「情報が足りないだけ」というルールベースの検出(spec section 6)
-  function computeHomeGaps() {
-    const gaps = [];
-    if (!karte.houseSpec || !karte.houseSpec.hRooms) gaps.push({ label: '間取りの希望', reason: '教えてもらえると、土地との相性や必要な広さの目安が分かります', target: 'myPageSection', focusEl: 'hRooms' });
-    if (!karte.houseSpec || !karte.houseSpec.hParking) gaps.push({ label: '駐車場の希望', reason: '台数が分かると、土地の広さが足りるかの目安になります', target: 'myPageSection', focusEl: 'hParking' });
+  // 完成度チェックリスト: 「足りないもの」だけでなく「もう終わったもの」も見える形にする
+  // (endowed progress効果 - 進んでいる実感が、次の一歩の後押しになる。過大な演出や煽りは使わない)
+  function computeChecklistItems() {
     const land = toNum(document.getElementById('mLand'));
     const exterior = toNum(document.getElementById('mExterior'));
     const ground = toNum(document.getElementById('mGround'));
     const budget = toNum(document.getElementById('mBudget'));
-    if (!budget) gaps.push({ label: '総予算', reason: '入れておくと、これから出す金額と自動で比較できるようになります', target: 'moneySection', focusEl: 'mBudget' });
-    if (karte.lastLocation && !land) gaps.push({ label: '土地代', reason: '分かる範囲で入れると、総額の見通しが立てやすくなります', target: 'moneySection', focusEl: 'mLand' });
-    if (karte.lastLocation && !exterior) gaps.push({ label: '外構費', reason: '見落とされやすい費用なので、早めに把握しておくと安心です', target: 'moneySection', focusEl: 'mExterior' });
-    if (karte.lastLocation && !ground) gaps.push({ label: '地盤改良費', reason: '未確認のままだと、後から総額が変わることがあります', target: 'moneySection', focusEl: 'mGround' });
-    if (!karte.companies || karte.companies.length === 0) gaps.push({ label: '住宅会社', reason: '1社でも登録しておくと、比較や質問リストに使えます', target: 'myPageSection', focusEl: 'cName' });
-    if (!karte.savedLands || karte.savedLands.length === 0) gaps.push({ label: '候補地の保存', reason: '保存しておくと、後で複数の土地を並べて比較できます', target: 'landSection', focusEl: null });
-    return gaps;
+    const items = [
+      { label: '状況の整理(質問)', done: !!karte.guideCompleted, target: 'guideCard', focusEl: null, reason: '3〜5つの質問に答えると、ここから先の案内があなた向けになります' },
+      { label: '土地の候補', done: !!(karte.savedLands && karte.savedLands.length), target: 'landSection', focusEl: null, reason: '保存しておくと、後で複数の土地を並べて比較できます' },
+      { label: '間取りの希望', done: !!(karte.houseSpec && karte.houseSpec.hRooms), target: 'myPageSection', focusEl: 'hRooms', reason: '教えてもらえると、土地との相性や必要な広さの目安が分かります' },
+      { label: '駐車場の希望', done: !!(karte.houseSpec && karte.houseSpec.hParking), target: 'myPageSection', focusEl: 'hParking', reason: '台数が分かると、土地の広さが足りるかの目安になります' },
+      { label: '総予算', done: !!budget, target: 'moneySection', focusEl: 'mBudget', reason: '入れておくと、これから出す金額と自動で比較できるようになります' },
+      { label: '住宅会社', done: !!(karte.companies && karte.companies.length), target: 'myPageSection', focusEl: 'cName', reason: '1社でも登録しておくと、比較や質問リストに使えます' }
+    ];
+    // 土地代・外構費・地盤改良費は、まだ土地の候補が無い段階では「該当なし」であって
+    // 「完了」ではないので、完了率を水増ししないよう対象外にする(karte.lastLocationが
+    // 出来てから初めてチェックリストに加わる)
+    if (karte.lastLocation) {
+      items.push(
+        { label: '土地代', done: !!land, target: 'moneySection', focusEl: 'mLand', reason: '分かる範囲で入れると、総額の見通しが立てやすくなります' },
+        { label: '外構費', done: !!exterior, target: 'moneySection', focusEl: 'mExterior', reason: '見落とされやすい費用なので、早めに把握しておくと安心です' },
+        { label: '地盤改良費', done: !!ground, target: 'moneySection', focusEl: 'mGround', reason: '未確認のままだと、後から総額が変わることがあります' }
+      );
+    }
+    return items;
+  }
+
+  function computeHomeGaps() {
+    return computeChecklistItems().filter(it => !it.done);
   }
 
   function wireSummaryRowClicks() {
@@ -2191,6 +2244,7 @@
         karte.savedLands.splice(Number(b.dataset.i), 1);
         saveKarte();
         renderSavedLands();
+        renderJourney();
       });
     });
     table.querySelectorAll('.sl-detail-grid input').forEach(inp => {
@@ -2218,6 +2272,7 @@
     });
     saveKarte();
     renderSavedLands();
+    renderJourney();
   }
 
   renderSavedLands();
