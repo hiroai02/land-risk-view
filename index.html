@@ -182,6 +182,67 @@
   .search-row button:disabled { opacity: 0.55; cursor: default; }
   .hint { font-size: 0.78rem; color: var(--sub); margin-top: 8px; }
 
+  /* ---------- Money tools ---------- */
+  .money-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+  .money-card h2 { font-size: 1rem; margin: 0 0 8px; }
+  .money-lead { font-size: 0.85rem; color: var(--sub); margin: 0 0 12px; }
+  .money-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .money-grid label, .money-budget {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--sub);
+    position: relative;
+  }
+  .money-budget {
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .money-grid input, .money-budget input {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    width: 100%;
+  }
+  .money-grid label span, .money-budget span {
+    position: absolute;
+    right: 10px;
+    bottom: 9px;
+    font-size: 0.78rem;
+    color: var(--sub);
+    pointer-events: none;
+  }
+  .money-result {
+    background: var(--chip-bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    color: var(--accent-dark);
+    margin-bottom: 8px;
+  }
+  .money-result.over { background: var(--warn-bg); color: var(--warn-ink); }
+  .money-result .big { font-size: 1.15rem; font-weight: 800; }
+  .money-note { font-size: 0.76rem; color: var(--sub); margin: 0; }
+
   /* ---------- Journey (home dashboard) ---------- */
   .journey-card {
     background: var(--card);
@@ -586,6 +647,49 @@
     </div>
   </div>
 
+  <div class="step-label"><span class="num">3</span>お金を整理する</div>
+
+  <div class="money-card">
+    <h2>💰 総額シミュレーター</h2>
+    <p class="money-lead">土地価格だけで比べず、諸費用込みの総額とご予算を見比べられます。</p>
+    <div class="money-grid">
+      <label>土地代<input type="number" id="mLand" placeholder="0" inputmode="numeric"><span>万円</span></label>
+      <label>建物代<input type="number" id="mBuilding" placeholder="0" inputmode="numeric"><span>万円</span></label>
+      <label>外構<input type="number" id="mExterior" placeholder="0" inputmode="numeric"><span>万円</span></label>
+      <label>地盤改良(未確認なら0)<input type="number" id="mGround" placeholder="0" inputmode="numeric"><span>万円</span></label>
+      <label>諸費用(登記・仲介等)<input type="number" id="mFees" placeholder="0" inputmode="numeric"><span>万円</span></label>
+    </div>
+    <label class="money-budget">ご予算<input type="number" id="mBudget" placeholder="0" inputmode="numeric"><span>万円</span></label>
+    <div class="money-result" id="mTotalResult"></div>
+    <p class="money-note">概算です。地盤改良・造成等は現地調査までは金額が確定しないことが多く、「未確認」のまま総額比較を進めると後から予算オーバーに気づくケースがあります。</p>
+  </div>
+
+  <div class="money-card">
+    <h2>🏦 住宅ローン返済シミュレーター(簡易)</h2>
+    <div class="money-grid">
+      <label>借入額<input type="number" id="lPrincipal" placeholder="0" inputmode="numeric"><span>万円</span></label>
+      <label>年利<input type="number" id="lRate" placeholder="0" step="0.01" inputmode="decimal"><span>%</span></label>
+      <label>返済期間<input type="number" id="lYears" placeholder="0" inputmode="numeric"><span>年</span></label>
+    </div>
+    <div class="money-result" id="lResult"></div>
+    <p class="money-note">元利均等返済・ボーナス返済なしの簡易計算です。実際の金利は固定/変動、金融機関、審査結果で変わります。「借りられる金額」と「無理なく返せる金額」は別物で、無理なく返せる目安は年収や他の借入状況によって金融機関ごとに基準が異なります。正確な借入可能額は金融機関の事前審査でご確認ください。</p>
+  </div>
+
+  <div class="money-card">
+    <h2>🏛️ 補助金について</h2>
+    <div class="host-row">
+      <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+      <div class="host-bubble">
+        <div class="host-name">みさき</div>
+        <div>国と自治体、それぞれに住宅関連の補助金制度があります。具体的な金額・対象・締切は年度や地域でよく変わるので、ここでは制度そのものを紹介するのではなく、公式情報への入り口だけ用意しています。</div>
+      </div>
+    </div>
+    <div class="guide-cta-row" style="margin-top:12px; flex-direction:column; align-items:stretch; gap:8px;">
+      <a class="guide-start-btn" style="text-decoration:none; text-align:center;" href="https://jutaku-shoene2026.mlit.go.jp/" target="_blank" rel="noopener">住宅省エネ2026キャンペーン(国交省・経産省・環境省 公式)</a>
+      <a class="guide-skip" id="localSubsidyLink" style="text-align:center; display:none;" target="_blank" rel="noopener">この地域の自治体の補助金を検索 →</a>
+    </div>
+  </div>
+
   <footer>
     出典: 地図・ハザード情報 = 国土地理院・国土交通省「ハザードマップポータルサイト」オープンデータ(<a href="https://disaportal.gsi.go.jp/" target="_blank" rel="noopener">disaportal.gsi.go.jp</a>)。住所検索 = 国土地理院 住所検索API。個人が無料で試作した非公式ツールです。国土交通省・国土地理院とは関係なく、診断・保証は行いません。
   </footer>
@@ -927,7 +1031,12 @@
   // 代わりに、確認できた地名で外部検索できるリンクだけを用意する。
   function updateListingsLink(label) {
     const card = document.getElementById('listingsCard');
-    if (!label || /^緯度/.test(label)) { card.style.display = 'none'; return; }
+    const localLink = document.getElementById('localSubsidyLink');
+    if (!label || /^緯度/.test(label)) {
+      card.style.display = 'none';
+      if (localLink) localLink.style.display = 'none';
+      return;
+    }
     const q = encodeURIComponent(`${label} 土地 売地`);
     card.style.display = '';
     card.innerHTML = `
@@ -942,6 +1051,12 @@
         <a class="guide-start-btn" style="text-decoration:none; display:inline-block;" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔍 このあたりの物件を探す</a>
       </div>
     `;
+    if (localLink) {
+      const sq = encodeURIComponent(`${label} 住宅 新築 補助金`);
+      localLink.href = `https://www.google.com/search?q=${sq}`;
+      localLink.textContent = `「${label}」周辺の自治体の補助金を検索 →`;
+      localLink.style.display = 'inline-block';
+    }
   }
 
   async function movePin(lat, lng, opts) {
@@ -1255,6 +1370,65 @@
       setTimeout(() => el.classList.remove('highlight-pulse'), 3300);
     }, 600);
   }
+
+  // ---------- お金ツール(すべてクライアント側の計算のみ、送信・保存先なし) ----------
+  function toNum(el) {
+    const v = parseFloat(el.value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function renderTotalSimulator() {
+    const land = toNum(document.getElementById('mLand'));
+    const building = toNum(document.getElementById('mBuilding'));
+    const exterior = toNum(document.getElementById('mExterior'));
+    const ground = toNum(document.getElementById('mGround'));
+    const fees = toNum(document.getElementById('mFees'));
+    const budget = toNum(document.getElementById('mBudget'));
+    const total = land + building + exterior + ground + fees;
+    const diff = budget - total;
+    const el = document.getElementById('mTotalResult');
+    if (budget === 0 && total === 0) { el.innerHTML = '各項目を入力すると、総額とご予算の差額を計算します。'; el.className = 'money-result'; return; }
+    if (budget === 0) {
+      el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span>(ご予算を入力すると差額も表示します)`;
+      el.className = 'money-result';
+      return;
+    }
+    if (diff >= 0) {
+      el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span> / ご予算まで残り <span class="big">${diff.toLocaleString()}万円</span>`;
+      el.className = 'money-result';
+    } else {
+      el.innerHTML = `合計 <span class="big">${total.toLocaleString()}万円</span> / ご予算を <span class="big">${Math.abs(diff).toLocaleString()}万円</span> 超過しています`;
+      el.className = 'money-result over';
+    }
+  }
+  ['mLand', 'mBuilding', 'mExterior', 'mGround', 'mFees', 'mBudget'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTotalSimulator);
+  });
+  renderTotalSimulator();
+
+  function renderLoanSimulator() {
+    const principalMan = toNum(document.getElementById('lPrincipal'));
+    const ratePct = toNum(document.getElementById('lRate'));
+    const years = toNum(document.getElementById('lYears'));
+    const el = document.getElementById('lResult');
+    if (principalMan <= 0 || years <= 0) {
+      el.innerHTML = '借入額・返済期間を入力すると、毎月の返済額の目安を計算します。';
+      el.className = 'money-result';
+      return;
+    }
+    const principal = principalMan * 10000;
+    const n = years * 12;
+    const r = (ratePct / 100) / 12;
+    const monthly = r === 0 ? principal / n : principal * r / (1 - Math.pow(1 + r, -n));
+    const totalPay = monthly * n;
+    const interest = totalPay - principal;
+    el.innerHTML = `毎月の返済額(目安) <span class="big">約${Math.round(monthly / 1000) * 1000 / 10000}万円</span><br>総返済額 約${Math.round(totalPay / 10000).toLocaleString()}万円(うち利息 約${Math.round(interest / 10000).toLocaleString()}万円)`;
+    el.className = 'money-result';
+  }
+  ['lPrincipal', 'lRate', 'lYears'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderLoanSimulator);
+  });
+  renderLoanSimulator();
 
   renderJourney();
 
