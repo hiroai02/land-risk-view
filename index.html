@@ -242,6 +242,43 @@
   .money-result.over { background: var(--warn-bg); color: var(--warn-ink); }
   .money-result .big { font-size: 1.15rem; font-weight: 800; }
   .money-note { font-size: 0.76rem; color: var(--sub); margin: 0; }
+  .qgen-list { list-style: none; margin: 0 0 4px; padding: 0; }
+  .qgen-list li {
+    padding: 9px 0;
+    border-top: 1px dashed var(--border);
+    font-size: 0.87rem;
+    display: flex;
+    gap: 8px;
+  }
+  .qgen-list li:first-child { border-top: none; }
+  .qgen-list li::before { content: "・"; color: var(--accent); flex: none; }
+  .qgen-list.checkable li::before { content: none; }
+  .qgen-list.checkable li { align-items: center; cursor: pointer; }
+  .qgen-list.checkable input[type=checkbox] { width: 18px; height: 18px; flex: none; }
+  .qgen-list.checkable li.checked span { color: var(--sub); text-decoration: line-through; }
+
+  .saved-land-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border);
+    font-size: 0.86rem;
+  }
+  .saved-land-row:first-child { border-top: none; }
+  .saved-land-row .sl-name { font-weight: 700; flex: 1; }
+  .saved-land-row .sl-tags { font-size: 0.76rem; color: var(--sub); }
+  .saved-land-row button {
+    font-size: 0.76rem;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    cursor: pointer;
+    flex: none;
+  }
 
   /* ---------- Journey (home dashboard) ---------- */
   .journey-card {
@@ -611,6 +648,8 @@
 
     <div class="summary-card" id="summaryCard"></div>
 
+    <button class="guide-skip" id="saveLandBtn" style="margin-bottom:14px; display:none;">📍 この場所を候補地として保存して比較する</button>
+
     <div class="tabs" id="tabs"></div>
 
     <div id="map"></div>
@@ -629,6 +668,16 @@
         <li><span class="ico">🏛️</span>自治体の窓口で、用途地域・建ぺい率・容積率・建築条件を確認したか</li>
         <li><span class="ico">🌦️</span>晴天時だけでなく、雨天時や別の時間帯にも現地を見たか</li>
       </ul>
+    </div>
+
+    <div class="money-card" id="questionGenCard" style="display:none;">
+      <h2>❓ 住宅会社に聞くことリスト</h2>
+      <p class="money-lead">この土地の状況とご回答から、確認しておきたい質問を自動でまとめます(定型文であり、AIによる生成ではありません)。</p>
+      <ul class="qgen-list" id="qgenList"></ul>
+      <div class="guide-cta-row" style="margin-top:10px;">
+        <button class="guide-start-btn" id="qgenCopyBtn">まとめてコピー</button>
+        <span class="money-note" id="qgenCopyStatus"></span>
+      </div>
     </div>
 
     <div class="guide-card" id="listingsCard" style="display:none;"></div>
@@ -688,6 +737,21 @@
       <a class="guide-start-btn" style="text-decoration:none; text-align:center;" href="https://jutaku-shoene2026.mlit.go.jp/" target="_blank" rel="noopener">住宅省エネ2026キャンペーン(国交省・経産省・環境省 公式)</a>
       <a class="guide-skip" id="localSubsidyLink" style="text-align:center; display:none;" target="_blank" rel="noopener">この地域の自治体の補助金を検索 →</a>
     </div>
+  </div>
+
+  <div class="step-label"><span class="num">4</span>進捗を管理する</div>
+
+  <div class="money-card">
+    <h2>📋 段階別チェックリスト</h2>
+    <p class="money-lead">契約前・建築中・引渡し前で確認したい項目です。チェック状態は端末に保存されます。法律判断はしません(あくまで確認推奨事項です)。</p>
+    <div class="tabs" id="stageTabs"></div>
+    <ul class="qgen-list" id="stageList" style="margin-top:8px;"></ul>
+    <div class="money-note" id="stageProgress"></div>
+  </div>
+
+  <div class="money-card" id="savedLandsCard" style="display:none;">
+    <h2>📍 保存した候補地の比較</h2>
+    <div id="savedLandsTable"></div>
   </div>
 
   <footer>
@@ -908,6 +972,54 @@
     karte.riskSummary = resultMap;
     saveKarte();
     renderJourney();
+    renderQuestionGenerator(resultMap);
+
+    const saveBtn = document.getElementById('saveLandBtn');
+    if (saveBtn) {
+      saveBtn.style.display = currentLocationLabel ? 'inline-block' : 'none';
+      saveBtn.onclick = saveCurrentLandAsCandidate;
+    }
+  }
+
+  // 住宅会社への質問リストを定型文で生成する(AIではなくテンプレート)
+  function renderQuestionGenerator(riskSummary) {
+    const card = document.getElementById('questionGenCard');
+    const list = document.getElementById('qgenList');
+    const qs = [
+      '地盤改良費は誰が負担しますか?(見積に含まれていますか)',
+      '上下水道・ガスの引込費用はこの見積に含まれていますか?',
+      'この見積に含まれていない費用(別途・オプション扱い)はありますか?'
+    ];
+    if (riskSummary && riskSummary.flood === 'hit') {
+      qs.push('ハザードマップ上でこの土地は洪水の浸水想定区域に該当していますが、盛土や止水板などの対策は必要ですか、費用はどれくらいですか?');
+    }
+    if (riskSummary && (riskSummary.dosekiryu === 'hit' || riskSummary.jisuberi === 'hit')) {
+      qs.push('この土地は土砂災害の警戒区域に該当する可能性がありますが、擁壁や造成の追加費用は発生しますか?');
+    }
+    if (riskSummary && (riskSummary.tsunami === 'hit' || riskSummary.hightide === 'hit')) {
+      qs.push('津波・高潮の浸水想定がありますが、盤面の高さ(地盤面の設定)についてどう考えればよいですか?');
+    }
+    if (karte.guideAnswers.housing === 'used') {
+      qs.push('建物状況調査(インスペクション)は実施済みですか?未実施の場合、実施は可能ですか?');
+    }
+    qs.push('契約後にキャンセルする場合の条件(違約金・返金)を教えてください。');
+    qs.push('工期の目安と、遅れた場合の取り決めはありますか?');
+
+    list.innerHTML = qs.map(q => `<li>${q}</li>`).join('');
+    card.style.display = '';
+
+    const copyBtn = document.getElementById('qgenCopyBtn');
+    const statusEl = document.getElementById('qgenCopyStatus');
+    copyBtn.onclick = async () => {
+      const text = qs.map((q, i) => `${i + 1}. ${q}`).join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        statusEl.textContent = 'コピーしました';
+      } catch (e) {
+        statusEl.textContent = 'コピーできませんでした。手動で選択してコピーしてください。';
+      }
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    };
   }
 
   const JOURNEY_STAGES = ['土地', '予算', '住宅会社', 'ローン', '間取り', '見積', '契約', '建築', '引渡し', '入居'];
@@ -1029,7 +1141,9 @@
 
   // 物件情報そのものは表示しない(不動産ポータルは無断取得・転載が規約違反になるため)。
   // 代わりに、確認できた地名で外部検索できるリンクだけを用意する。
+  let currentLocationLabel = null;
   function updateListingsLink(label) {
+    currentLocationLabel = /^緯度/.test(label || '') ? null : label;
     const card = document.getElementById('listingsCard');
     const localLink = document.getElementById('localSubsidyLink');
     if (!label || /^緯度/.test(label)) {
@@ -1429,6 +1543,124 @@
     document.getElementById(id).addEventListener('input', renderLoanSimulator);
   });
   renderLoanSimulator();
+
+  // ---------- 段階別チェックリスト(契約前・建築中・引渡し前): 法律判断はせず確認推奨事項として扱う ----------
+  const STAGE_CHECKLISTS = {
+    keiyaku: {
+      label: '契約前', items: [
+        '契約金の金額と支払い時期', '支払い条件(中間金・引渡し時等)', '追加工事の有無と概算費用',
+        '地盤調査の結果と地盤改良の要否', '外構・照明・カーテン等が標準かオプションか', '標準仕様とオプションの線引き',
+        '契約解除の条件(違約金の有無)', '保証内容と期間', '工期の目安と遅延時の取り決め',
+        '契約書・重要事項説明書の内容', '仕様書に希望が反映されているか'
+      ]
+    },
+    kenchiku: {
+      label: '建築中', items: [
+        '着工日の確認', '基礎工事の完了確認', '上棟の立ち会い', '屋根工事の完了確認',
+        '断熱材の施工状況', '外壁工事の完了確認', '設備(水回り等)の取り付け確認',
+        '内装工事の進捗', '外構工事の進捗', '完成検査の日程'
+      ]
+    },
+    hikiwatashi: {
+      label: '引渡し前', items: [
+        '傷・汚れの有無(壁・床・建具)', '建具(ドア・窓)の開閉確認', '水回りの動作確認',
+        '電気・コンセントの動作確認', '換気設備の動作確認', '空調(エアコン等)の動作確認',
+        '外構の仕上がり確認', '太陽光発電システムの説明(設置している場合)', '引渡し書類一式の受け取り', '保証書の受け取り'
+      ]
+    }
+  };
+  let currentStage = 'keiyaku';
+
+  function renderStageTabs() {
+    const el = document.getElementById('stageTabs');
+    el.innerHTML = Object.keys(STAGE_CHECKLISTS).map(key =>
+      `<button class="tab-btn${key === currentStage ? ' active' : ''}" data-stage="${key}">${STAGE_CHECKLISTS[key].label}</button>`
+    ).join('');
+    el.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => { currentStage = btn.dataset.stage; renderStageTabs(); renderStageChecklist(); });
+    });
+  }
+
+  function renderStageChecklist() {
+    if (!karte.stageChecks) karte.stageChecks = {};
+    if (!karte.stageChecks[currentStage]) karte.stageChecks[currentStage] = {};
+    const checks = karte.stageChecks[currentStage];
+    const items = STAGE_CHECKLISTS[currentStage].items;
+    const list = document.getElementById('stageList');
+    list.className = 'qgen-list checkable';
+    list.innerHTML = items.map((item, i) => `
+      <li class="${checks[i] ? 'checked' : ''}" data-i="${i}">
+        <input type="checkbox" ${checks[i] ? 'checked' : ''}>
+        <span>${item}</span>
+      </li>`).join('');
+    list.querySelectorAll('li').forEach(li => {
+      li.addEventListener('click', (e) => {
+        const i = li.dataset.i;
+        checks[i] = !checks[i];
+        karte.stageChecks[currentStage] = checks;
+        saveKarte();
+        renderStageChecklist();
+      });
+    });
+    const doneCount = items.filter((_, i) => checks[i]).length;
+    document.getElementById('stageProgress').textContent = `${doneCount}/${items.length}件 確認済み`;
+  }
+
+  renderStageTabs();
+  renderStageChecklist();
+
+  // ---------- 候補地の保存・比較 ----------
+  function renderSavedLands() {
+    if (!karte.savedLands) karte.savedLands = [];
+    const card = document.getElementById('savedLandsCard');
+    const table = document.getElementById('savedLandsTable');
+    if (karte.savedLands.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    table.innerHTML = karte.savedLands.map((land, i) => {
+      const hits = Object.entries(land.riskSummary || {}).filter(([, v]) => v === 'hit').map(([k]) => SUMMARY_LABELS[k] ? SUMMARY_LABELS[k].label.replace(/^\S+\s/, '') : k);
+      const tag = hits.length ? `⚠️ ${hits.join('・')}` : '該当ハザードなし(データ上)';
+      return `
+        <div class="saved-land-row">
+          <div>
+            <div class="sl-name">${land.label}</div>
+            <div class="sl-tags">${tag}</div>
+          </div>
+          <button data-act="view" data-i="${i}">見る</button>
+          <button data-act="del" data-i="${i}">削除</button>
+        </div>`;
+    }).join('');
+    table.querySelectorAll('button[data-act="view"]').forEach(b => {
+      b.addEventListener('click', () => {
+        const land = karte.savedLands[Number(b.dataset.i)];
+        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        movePin(land.lat, land.lng, { recenter: true });
+      });
+    });
+    table.querySelectorAll('button[data-act="del"]').forEach(b => {
+      b.addEventListener('click', () => {
+        karte.savedLands.splice(Number(b.dataset.i), 1);
+        saveKarte();
+        renderSavedLands();
+      });
+    });
+  }
+
+  function saveCurrentLandAsCandidate() {
+    if (!karte.lastLocation || !currentLocationLabel) return;
+    if (!karte.savedLands) karte.savedLands = [];
+    if (karte.savedLands.some(l => l.label === currentLocationLabel)) return;
+    karte.savedLands.push({
+      label: currentLocationLabel,
+      lat: karte.lastLocation.lat,
+      lng: karte.lastLocation.lng,
+      riskSummary: karte.riskSummary,
+      savedAt: new Date().toISOString()
+    });
+    saveKarte();
+    renderSavedLands();
+  }
+
+  renderSavedLands();
 
   renderJourney();
 
