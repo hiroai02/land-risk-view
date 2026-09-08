@@ -297,6 +297,41 @@
   .money-result.over { background: var(--danger-bg); color: var(--danger); }
   .money-result .big { font-size: 1.15rem; font-weight: 800; }
   .money-note { font-size: 0.76rem; color: var(--sub); margin: 0; }
+
+  /* ---------- 折りたたみカード(選んだら詳細が広がる、普段はコンパクト) ---------- */
+  .cc-card > h2 {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .cc-card > h2::after {
+    content: '▾';
+    margin-left: auto;
+    flex: none;
+    color: var(--sub);
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+  }
+  .cc-card.cc-open > h2::after { transform: rotate(180deg); }
+  .cc-status {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--sub);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 46%;
+  }
+  .cc-body-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.25s ease;
+  }
+  .cc-card.cc-open .cc-body-wrap { grid-template-rows: 1fr; }
+  .cc-body-inner { overflow: hidden; min-height: 0; }
+
   .qgen-list { list-style: none; margin: 0 0 4px; padding: 0; }
   .qgen-list li {
     padding: 9px 0;
@@ -963,8 +998,9 @@
 
   <div class="step-label"><span class="num">3</span>お金を整理する</div>
 
-  <div class="money-card" id="moneySection">
-    <h2>総額シミュレーター</h2>
+  <div class="money-card cc-card" id="moneySection">
+    <h2>総額シミュレーター<span class="cc-status" id="ccStatusTotal"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">土地価格だけで比べず、諸費用込みの総額とご予算を見比べられます。</p>
     <div class="money-grid">
       <label>土地代<input type="number" id="mLand" placeholder="0" inputmode="numeric"><span>万円</span></label>
@@ -976,10 +1012,12 @@
     <label class="money-budget">ご予算<input type="number" id="mBudget" placeholder="0" inputmode="numeric"><span>万円</span></label>
     <div class="money-result" id="mTotalResult"></div>
     <p class="money-note">あくまで概算の目安です。地盤改良・造成などは現地調査まで金額が確定しないことが多いので、分かった時点で少しずつ更新していくのがおすすめです。</p>
+    </div></div>
   </div>
 
-  <div class="money-card">
-    <h2>住宅ローン返済シミュレーター(簡易)</h2>
+  <div class="money-card cc-card">
+    <h2>住宅ローン返済シミュレーター(簡易)<span class="cc-status" id="ccStatusLoan"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <div class="money-grid">
       <label>借入額<input type="number" id="lPrincipal" placeholder="0" inputmode="numeric"><span>万円</span></label>
       <label>年利<input type="number" id="lRate" placeholder="0" step="0.01" inputmode="decimal"><span>%</span></label>
@@ -987,10 +1025,12 @@
     </div>
     <div class="money-result" id="lResult"></div>
     <p class="money-note">元利均等返済・ボーナス返済なしの簡易計算です。実際の金利は固定/変動、金融機関、審査結果で変わります。「借りられる金額」と「無理なく返せる金額」は別物で、無理なく返せる目安は年収や他の借入状況によって金融機関ごとに基準が異なります。正確な借入可能額は金融機関の事前審査でご確認ください。</p>
+    </div></div>
   </div>
 
-  <div class="money-card" id="subsidyCard">
+  <div class="money-card cc-card" id="subsidyCard">
     <h2>補助金について</h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <div class="host-row">
       <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
       <div class="host-bubble">
@@ -1002,10 +1042,12 @@
       <a class="guide-start-btn" style="text-decoration:none; text-align:center;" href="https://jutaku-shoene2026.mlit.go.jp/" target="_blank" rel="noopener">住宅省エネ2026キャンペーン(国交省・経産省・環境省 公式)</a>
       <a class="guide-skip" id="localSubsidyLink" style="text-align:center; display:none;" target="_blank" rel="noopener">この地域の自治体の補助金を検索 →</a>
     </div>
+    </div></div>
   </div>
 
-  <div class="money-card" id="myPageSection">
-    <h2>間取り・仕様の希望</h2>
+  <div class="money-card cc-card" id="myPageSection">
+    <h2>間取り・仕様の希望<span class="cc-status" id="ccStatusSpec"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">一度入力すれば、家づくりカルテに保存され、質問リスト等でも参照します。</p>
     <div class="money-grid">
       <label>部屋数(目安)<input type="number" id="hRooms" placeholder="0" inputmode="numeric"><span>室</span></label>
@@ -1025,10 +1067,12 @@
       <textarea id="hMemo" rows="2" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-family:inherit; font-size:0.9rem;"></textarea>
     </label>
     <div class="money-note" id="hSaveStatus"></div>
+    </div></div>
   </div>
 
-  <div class="money-card">
-    <h2>住宅会社の比較メモ</h2>
+  <div class="money-card cc-card">
+    <h2>住宅会社の比較メモ<span class="cc-status" id="ccStatusCompany"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">検討している会社をご自身で追加して比較できます(外部データベースとの連携はありません)。</p>
     <div class="money-grid">
       <label>会社名<input type="text" id="cName" placeholder="例: ○○ホーム"></label>
@@ -1041,10 +1085,12 @@
       <button class="guide-start-btn" id="companyAddBtn">追加する</button>
     </div>
     <div id="companyList"></div>
+    </div></div>
   </div>
 
-  <div class="money-card">
-    <h2>見積チェックポイント</h2>
+  <div class="money-card cc-card">
+    <h2>見積チェックポイント<span class="cc-status" id="ccStatusQuote"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">見積書の項目(1行1項目)を貼り付けると、確認した方がよい表現を自動で拾います(AIによる読み取りではなく、キーワード照合です)。会社名を入れて保存すると、下の比較表にたまっていきます。</p>
     <div class="money-grid">
       <label>会社名(任意)<input type="text" id="quoteCompanyName" placeholder="例: ○○ホーム"></label>
@@ -1055,27 +1101,34 @@
       <button class="guide-start-btn" id="quoteCheckBtn">チェックして比較に保存</button>
     </div>
     <div id="quoteResult"></div>
+    </div></div>
   </div>
 
-  <div class="money-card" id="quoteCompareCard" style="display:none;">
-    <h2>見積比較</h2>
+  <div class="money-card cc-card" id="quoteCompareCard" style="display:none;">
+    <h2>見積比較<span class="cc-status" id="ccStatusQuoteCompare"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">保存した見積を並べて比較できます(会社名が同じものは上書き保存されます)。</p>
     <div id="quoteCompareTable"></div>
+    </div></div>
   </div>
 
   <div class="step-label"><span class="num">4</span>進捗を管理する</div>
 
-  <div class="money-card">
-    <h2>段階別チェックリスト</h2>
+  <div class="money-card cc-card">
+    <h2>段階別チェックリスト<span class="cc-status" id="ccStatusStage"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <p class="money-lead">契約前・建築中・引渡し前で確認したい項目です。チェック状態は端末に保存されます。法律判断はしません(あくまで確認推奨事項です)。</p>
     <div class="tabs" id="stageTabs"></div>
     <ul class="qgen-list" id="stageList" style="margin-top:8px;"></ul>
     <div class="money-note" id="stageProgress"></div>
+    </div></div>
   </div>
 
-  <div class="money-card" id="savedLandsCard" style="display:none;">
-    <h2>保存した候補地の比較</h2>
+  <div class="money-card cc-card" id="savedLandsCard" style="display:none;">
+    <h2>保存した候補地の比較<span class="cc-status" id="ccStatusSavedLands"></span></h2>
+    <div class="cc-body-wrap"><div class="cc-body-inner">
     <div id="savedLandsTable"></div>
+    </div></div>
   </div>
 
   <footer>
@@ -1446,6 +1499,7 @@
 
     if (nextBtn) {
       el.querySelector('.jn-btn').addEventListener('click', () => {
+        ensureCcOpen(nextBtn.target);
         document.getElementById(nextBtn.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
@@ -1453,10 +1507,40 @@
       btn.addEventListener('click', () => {
         const target = btn.dataset.target;
         const focus = btn.dataset.focus;
+        ensureCcOpen(target);
+        if (focus) ensureCcOpen(focus);
         document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => focus && document.getElementById(focus)?.focus(), 400);
       });
     });
+    updateCcStatuses();
+  }
+
+  // ---------- 折りたたみカード: 普段はコンパクトに、選んだ項目だけ詳細が広がる ----------
+  function ensureCcOpen(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const card = el.classList.contains('cc-card') ? el : el.closest('.cc-card');
+    if (card) card.classList.add('cc-open');
+  }
+  document.querySelectorAll('.cc-card > h2').forEach(h => {
+    h.addEventListener('click', () => { h.closest('.cc-card').classList.toggle('cc-open'); });
+  });
+  function updateCcStatuses() {
+    const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    const total = toNum(document.getElementById('mLand')) + toNum(document.getElementById('mBuilding')) + toNum(document.getElementById('mExterior')) + toNum(document.getElementById('mGround')) + toNum(document.getElementById('mFees'));
+    setStat('ccStatusTotal', total > 0 ? `合計 ${total.toLocaleString()}万円` : '未入力');
+    const principal = toNum(document.getElementById('lPrincipal'));
+    const years = toNum(document.getElementById('lYears'));
+    setStat('ccStatusLoan', (principal > 0 && years > 0) ? '計算済み' : '未入力');
+    const hRooms = document.getElementById('hRooms').value;
+    const hParking = document.getElementById('hParking').value;
+    setStat('ccStatusSpec', hRooms ? `${hRooms}室・駐車${hParking || 0}台` : '未入力');
+    setStat('ccStatusCompany', (karte.companies && karte.companies.length) ? `${karte.companies.length}社登録` : '未登録');
+    setStat('ccStatusQuoteCompare', (karte.quotes && karte.quotes.length) ? `${karte.quotes.length}件比較中` : '');
+    const stageProgressEl = document.getElementById('stageProgress');
+    setStat('ccStatusStage', stageProgressEl ? stageProgressEl.textContent : '');
+    setStat('ccStatusSavedLands', (karte.savedLands && karte.savedLands.length) ? `${karte.savedLands.length}件保存中` : '');
   }
 
   // 家づくりの穴: 「危険」ではなく「情報が足りないだけ」というルールベースの検出(spec section 6)
@@ -1996,7 +2080,7 @@
     el.className = 'money-result';
   }
   ['lPrincipal', 'lRate', 'lYears'].forEach(id => {
-    document.getElementById(id).addEventListener('input', renderLoanSimulator);
+    document.getElementById(id).addEventListener('input', () => { renderLoanSimulator(); updateCcStatuses(); });
   });
   renderLoanSimulator();
 
@@ -2263,6 +2347,7 @@
 
     const doneCount = items.filter((_, i) => normalizeCheckEntry(checks[i]).checked).length;
     document.getElementById('stageProgress').textContent = `${doneCount}/${items.length}件 確認済み`;
+    updateCcStatuses();
   }
 
   renderStageTabs();
@@ -2379,6 +2464,7 @@
   navLinks.forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
+      ensureCcOpen(a.dataset.target);
       const target = document.getElementById(a.dataset.target);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
