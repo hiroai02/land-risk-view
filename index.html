@@ -570,6 +570,8 @@
       </ul>
     </div>
 
+    <div class="guide-card" id="listingsCard" style="display:none;"></div>
+
     <div class="guide-card" id="handoffCard">
       <div class="host-row">
         <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
@@ -886,6 +888,27 @@
     });
   }
 
+  // 物件情報そのものは表示しない(不動産ポータルは無断取得・転載が規約違反になるため)。
+  // 代わりに、確認できた地名で外部検索できるリンクだけを用意する。
+  function updateListingsLink(label) {
+    const card = document.getElementById('listingsCard');
+    if (!label || /^緯度/.test(label)) { card.style.display = 'none'; return; }
+    const q = encodeURIComponent(`${label} 土地 売地`);
+    card.style.display = '';
+    card.innerHTML = `
+      <div class="host-row">
+        <img class="host-avatar sm" src="https://assets.st-note.com/production/uploads/images/310587867/profile_69777aac5e1697e7a9502ad0ab9cbbf6.png?width=300" alt="みさき" width="34" height="34" loading="lazy">
+        <div class="host-bubble">
+          <div class="host-name">みさき</div>
+          <div>このあたりで実際に売り出されている土地を見たい場合は、外部の不動産ポータルで検索できます(このサイトには物件情報は表示していません)。</div>
+        </div>
+      </div>
+      <div class="guide-cta-row" style="margin-top:10px;">
+        <a class="guide-start-btn" style="text-decoration:none; display:inline-block;" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔍 このあたりの物件を探す</a>
+      </div>
+    `;
+  }
+
   async function movePin(lat, lng, opts) {
     opts = opts || {};
     if (opts.recenter) map.setView([lat, lng], 16);
@@ -903,6 +926,7 @@
     if (marker) marker.bindPopup(finalLabel);
     setStatus(`表示中: ${finalLabel}(ピンをドラッグ、または地図をタップして場所を調整できます)`, 'ok');
     maybeHighlightChecklist();
+    updateListingsLink(finalLabel);
     runRiskSummary(lat, lng);
   }
 
@@ -963,6 +987,7 @@
 
       setStatus(`表示中: ${title}(ズレている場合はピンをドラッグ、または地図をタップして調整できます)`, 'ok');
       maybeHighlightChecklist();
+      updateListingsLink(title);
       runRiskSummary(lat, lng);
     } catch (e) {
       setStatus('エラーが発生しました。時間をおいて再度お試しください。', 'error');
