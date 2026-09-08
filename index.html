@@ -1623,8 +1623,12 @@
     const years = toNum(document.getElementById('lYears'));
     setStat('ccStatusLoan', (principal > 0 && years > 0) ? '計算済み' : '未入力');
     const hRooms = document.getElementById('hRooms').value;
+    const hFloors = document.getElementById('hFloors').value;
+    const hTsubo = document.getElementById('hTsubo').value;
     const hParking = document.getElementById('hParking').value;
-    setStat('ccStatusSpec', hRooms ? `${hRooms}室・駐車${hParking || 0}台` : '未入力');
+    if (hRooms) setStat('ccStatusSpec', `${hRooms}室・駐車${hParking || 0}台`);
+    else if (hFloors || hTsubo) setStat('ccStatusSpec', `${hFloors || ''}${hTsubo ? ` ${hTsubo}坪` : ''}`.trim() || '未入力');
+    else setStat('ccStatusSpec', '未入力');
     setStat('ccStatusCompany', (karte.companies && karte.companies.length) ? `${karte.companies.length}社登録` : '未登録');
     setStat('ccStatusQuoteCompare', (karte.quotes && karte.quotes.length) ? `${karte.quotes.length}件比較中` : '');
     const stageProgressEl = document.getElementById('stageProgress');
@@ -1643,7 +1647,7 @@
     const items = [
       { label: '状況の整理(質問)', done: !!karte.guideCompleted, target: 'guideCard', focusEl: null, reason: '3〜5つの質問に答えると、ここから先の案内があなた向けになります' },
       { label: '土地の候補', done: !!(karte.savedLands && karte.savedLands.length), target: 'landSection', focusEl: null, reason: '保存しておくと、後で複数の土地を並べて比較できます' },
-      { label: '間取りの希望', done: !!(karte.houseSpec && karte.houseSpec.hRooms), target: 'myPageSection', focusEl: 'hRooms', reason: '教えてもらえると、土地との相性や必要な広さの目安が分かります' },
+      { label: '間取りの希望', done: !!(karte.houseSpec && (karte.houseSpec.hRooms || karte.houseSpec.hFloors || karte.houseSpec.hTsubo)), target: 'myPageSection', focusEl: 'hRooms', reason: '教えてもらえると、土地との相性や必要な広さの目安が分かります' },
       { label: '駐車場の希望', done: !!(karte.houseSpec && karte.houseSpec.hParking), target: 'myPageSection', focusEl: 'hParking', reason: '台数が分かると、土地の広さが足りるかの目安になります' },
       { label: '総予算', done: !!budget, target: 'moneySection', focusEl: 'mBudget', reason: '入れておくと、これから出す金額と自動で比較できるようになります' },
       { label: '住宅会社', done: !!(karte.companies && karte.companies.length), target: 'myPageSection', focusEl: 'cName', reason: '1社でも登録しておくと、比較や質問リストに使えます' }
@@ -1906,6 +1910,39 @@
       ]
     },
     {
+      id: 'floorplanPref',
+      when: (a) => a.housing === 'newbuild',
+      q: '建物のイメージはありますか?',
+      options: [
+        { label: '平屋にしたい', tag: 'flat' },
+        { label: '2階建て', tag: 'two' },
+        { label: '3階建て以上', tag: 'three' },
+        { label: 'まだ決めていない', tag: 'undecided' }
+      ]
+    },
+    {
+      id: 'tsuboPref',
+      when: (a) => a.housing === 'newbuild' && a.floorplanPref && a.floorplanPref !== 'undecided',
+      q: '延床の広さのイメージは?',
+      options: [
+        { label: '20坪未満(コンパクトに)', tag: 'small' },
+        { label: '20〜30坪', tag: 'mid' },
+        { label: '30坪以上', tag: 'large' },
+        { label: 'まだ分からない', tag: 'unsure' }
+      ]
+    },
+    {
+      id: 'parkingPref',
+      when: (a) => a.housing === 'newbuild' && a.floorplanPref && a.floorplanPref !== 'undecided',
+      q: '駐車場は何台分必要ですか?',
+      options: [
+        { label: '0台(不要)', tag: '0' },
+        { label: '1台', tag: '1' },
+        { label: '2台以上', tag: '2plus' },
+        { label: 'まだ未定', tag: 'undecided' }
+      ]
+    },
+    {
       id: 'concern',
       q: '一番気になるのは?',
       options: [
@@ -2010,7 +2047,7 @@
   }
 
   function renderGuideResult() {
-    const { experience, stage, housing, concern, hazardDetail } = guideAnswers;
+    const { experience, stage, housing, concern, hazardDetail, floorplanPref, tsuboPref, parkingPref } = guideAnswers;
 
     let msg = experience === 'beginner'
       ? '初めての土地・物件探しですね。'
@@ -2028,6 +2065,23 @@
       msg += ' 中古一戸建てだと、このツールが見られるのは土地(周辺のハザード)までです。建物自体の劣化や耐震性は別途インスペクション(建物状況調査)での確認をおすすめします。';
     } else if (housing === 'newbuild') {
       msg += ' 新築で土地から探すなら、着工前に用途地域・建築条件・地盤も自治体や施工会社に確認しておくと安心です。';
+      if (floorplanPref && floorplanPref !== 'undecided') {
+        const floorLabelMap = { flat: '平屋', two: '2階建て', three: '3階建て以上' };
+        const tsuboLabelMap = { small: '20坪未満', mid: '20〜30坪', large: '30坪以上' };
+        const parkingLabelMap = { '0': '0台', '1': '1台', '2plus': '2台以上' };
+        let specLine = `${floorLabelMap[floorplanPref]}`;
+        if (tsuboPref && tsuboLabelMap[tsuboPref]) specLine += `・延床${tsuboLabelMap[tsuboPref]}`;
+        if (parkingPref && parkingLabelMap[parkingPref]) specLine += `・駐車${parkingLabelMap[parkingPref]}`;
+        msg += ` ${specLine}のご希望として、下の「間取り・仕様の希望」に入れておきました。土地の広さの目安として使ってください。`;
+
+        if (!karte.houseSpec) karte.houseSpec = {};
+        const floorValueMap = { flat: '平屋', two: '2階建て', three: '3階建て以上' };
+        const tsuboValueMap = { small: 18, mid: 25, large: 35 };
+        const parkingValueMap = { '0': 0, '1': 1, '2plus': 2 };
+        if (!karte.houseSpec.hFloors) karte.houseSpec.hFloors = floorValueMap[floorplanPref];
+        if (!karte.houseSpec.hTsubo && tsuboValueMap[tsuboPref] !== undefined) karte.houseSpec.hTsubo = tsuboValueMap[tsuboPref];
+        if (!karte.houseSpec.hParking && parkingValueMap[parkingPref] !== undefined) karte.houseSpec.hParking = parkingValueMap[parkingPref];
+      }
     }
 
     if (concern === 'money') {
@@ -2052,6 +2106,7 @@
     karte.guideAnswers = guideAnswers;
     karte.guideCompleted = true;
     saveKarte();
+    loadHouseSpec();
     renderJourney();
 
     guideCard.innerHTML = `
