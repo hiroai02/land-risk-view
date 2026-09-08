@@ -417,6 +417,27 @@
     margin-right: 6px;
   }
 
+  .gaps-box {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  .gaps-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--unknown);
+    margin-bottom: 6px;
+  }
+  .gaps-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.8rem;
+    padding: 4px 0;
+    color: var(--ink);
+  }
+  .gaps-row .g-reason { color: var(--sub); font-size: 0.76rem; text-align: right; }
+
   /* ---------- Guide (branching consultation) ---------- */
   .guide-card {
     background: var(--card);
@@ -1223,12 +1244,39 @@
       ? `<div class="journey-unconfirmed"><span class="chip">未確認 ${karte.unconfirmed.length}件</span>${karte.unconfirmed.map(u => u.label).join(' / ')}</div>`
       : '';
 
+    const gaps = computeHomeGaps();
+    const gapsHtml = gaps.length ? `
+      <div class="gaps-box">
+        <div class="gaps-title">情報が足りない項目(${gaps.length})</div>
+        ${gaps.map(g => `<div class="gaps-row"><span class="g-label">${g.label}</span><span class="g-reason">${g.reason}</span></div>`).join('')}
+      </div>` : '';
+
     el.innerHTML = `
       <div class="journey-title">あなたの家づくり</div>
       <div class="journey-steps">${stepsHtml}</div>
       <div class="journey-next ${nextState}"><span class="jn-label">今やること</span><span>${nextText}</span></div>
       ${unconfirmedHtml}
+      ${gapsHtml}
     `;
+  }
+
+  // 家づくりの穴: 「危険」ではなく「情報が足りないだけ」というルールベースの検出(spec section 6)
+  function computeHomeGaps() {
+    const gaps = [];
+    if (!karte.houseSpec || !karte.houseSpec.hRooms) gaps.push({ label: '間取りの希望', reason: '部屋数などが未登録です' });
+    if (!karte.houseSpec || !karte.houseSpec.hParking) gaps.push({ label: '駐車場の希望', reason: '必要台数が未登録です' });
+    const land = toNum(document.getElementById('mLand'));
+    const building = toNum(document.getElementById('mBuilding'));
+    const exterior = toNum(document.getElementById('mExterior'));
+    const ground = toNum(document.getElementById('mGround'));
+    const budget = toNum(document.getElementById('mBudget'));
+    if (!budget) gaps.push({ label: '総予算', reason: 'まだ入力されていません' });
+    if (karte.lastLocation && !land) gaps.push({ label: '土地代', reason: '総額シミュレーターに未入力です' });
+    if (karte.lastLocation && !exterior) gaps.push({ label: '外構費', reason: '見落としやすい費用です。総額シミュレーターに追加しましょう' });
+    if (karte.lastLocation && !ground) gaps.push({ label: '地盤改良費', reason: '未確認のままだと総額が変わる可能性があります' });
+    if (!karte.companies || karte.companies.length === 0) gaps.push({ label: '住宅会社', reason: 'まだ1社も登録されていません' });
+    if (!karte.savedLands || karte.savedLands.length === 0) gaps.push({ label: '候補地の保存', reason: '比較するにはまず1件保存しましょう' });
+    return gaps;
   }
 
   function wireSummaryRowClicks() {
@@ -1690,8 +1738,23 @@
       el.className = 'money-result over';
     }
   }
-  ['mLand', 'mBuilding', 'mExterior', 'mGround', 'mFees', 'mBudget'].forEach(id => {
-    document.getElementById(id).addEventListener('input', renderTotalSimulator);
+  const TOTAL_SIM_FIELDS = ['mLand', 'mBuilding', 'mExterior', 'mGround', 'mFees', 'mBudget'];
+  function loadTotalSim() {
+    if (!karte.totalSim) return;
+    TOTAL_SIM_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && karte.totalSim[id] !== undefined) el.value = karte.totalSim[id];
+    });
+  }
+  loadTotalSim();
+  TOTAL_SIM_FIELDS.forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      renderTotalSimulator();
+      karte.totalSim = karte.totalSim || {};
+      TOTAL_SIM_FIELDS.forEach(fid => { karte.totalSim[fid] = document.getElementById(fid).value; });
+      saveKarte();
+      renderJourney();
+    });
   });
   renderTotalSimulator();
 
@@ -1732,6 +1795,7 @@
     karte.houseSpec = {};
     HOUSE_SPEC_FIELDS.forEach(id => { karte.houseSpec[id] = document.getElementById(id).value; });
     saveKarte();
+    renderJourney();
     const status = document.getElementById('hSaveStatus');
     status.textContent = '保存しました(家づくりカルテに記録、質問リスト等でも参照します)';
     setTimeout(() => { status.textContent = ''; }, 2500);
@@ -1759,6 +1823,7 @@
         karte.companies.splice(Number(b.dataset.i), 1);
         saveKarte();
         renderCompanyList();
+        renderJourney();
       });
     });
   }
@@ -1776,6 +1841,7 @@
     document.getElementById('cPrice').value = '';
     document.getElementById('cNote').value = '';
     renderCompanyList();
+    renderJourney();
   });
   renderCompanyList();
 
