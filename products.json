@@ -58,10 +58,11 @@
       ],
       "rakuten": {
         "url": "https://item.rakuten.co.jp/fansfactory/4995296800082/",
+        "affiliateUrl": "https://hb.afl.rakuten.co.jp/ichiba/5766f935.3f976b05.5766f936.5f9d1426/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Ffansfactory%2F4995296800082%2F&link_type=hybrid_url&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJoeWJyaWRfdXJsIiwic2l6ZSI6IjI0MHgyNDAiLCJuYW0iOjEsIm5hbXAiOiJyaWdodCIsImNvbSI6MSwiY29tcCI6ImRvd24iLCJwcmljZSI6MSwiYm9yIjoxLCJjb2wiOjEsImJidG4iOjEsInByb2QiOjAsImFtcCI6ZmFsc2V9",
         "shopName": "ファンズファクトリー",
-        "price": 32985,
-        "priceCheckedAt": "2026-09-08",
-        "affiliateNote": "楽天アフィリエイトのリンクラッピングは未実施(要ツール操作)。現在は通常リンクのため紹介料は発生しない。"
+        "price": 32970,
+        "priceCheckedAt": "2026-09-10",
+        "note": "アフィリエイトリンクは実際に生成・動作確認済み(2026-09-10)。"
       }
     },
     {
