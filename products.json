@@ -89,10 +89,11 @@
       ],
       "rakuten": {
         "url": "https://item.rakuten.co.jp/rbhonpo/ara43xxbztj46ptvmrk3qbeqra/",
+        "affiliateUrl": "https://hb.afl.rakuten.co.jp/ichiba/57673028.b8ab2368.57673029.6b75feb3/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Frbhonpo%2Fara43xxbztj46ptvmrk3qbeqra%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D",
         "shopName": "RB本舗",
         "price": 4340,
-        "priceCheckedAt": "2026-09-08",
-        "affiliateNote": "楽天アフィリエイトのリンクラッピングは未実施(要ツール操作)。現在は通常リンクのため紹介料は発生しない。"
+        "priceCheckedAt": "2026-09-10",
+        "note": "アフィリエイトリンクは実際に生成・動作確認済み(2026-09-10)。これで3商品ともAmazon/楽天の両方に実アフィリエイトリンクが設定完了。"
       }
     }
   ]
