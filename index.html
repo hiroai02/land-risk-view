@@ -18,7 +18,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Zen+Old+Mincho:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <style>
   /* ---------- Design tokens (Light Premium) ---------- */
@@ -1010,9 +1010,127 @@
     flex: none;
     stroke: currentColor;
   }
+
+  /* ---------- Misaki brand / responsive shell override ---------- */
+  :root {
+    --brand-bg:#fbfaf6;
+    --brand-paper:#ffffff;
+    --brand-ink:#2e2b27;
+    --brand-sub:#77736b;
+    --brand-green:#5f8f62;
+    --brand-green-dark:#416d47;
+    --brand-green-soft:#e9f2e7;
+    --brand-orange:#ef8a32;
+    --brand-line:#e7e2da;
+    --brand-shadow:0 18px 55px rgba(58,53,45,.10);
+  }
+  body { background:var(--brand-bg); color:var(--brand-ink); }
+  .site-topbar{
+    position:sticky;top:0;z-index:1100;background:rgba(255,255,255,.96);
+    backdrop-filter:blur(16px);border-bottom:1px solid var(--brand-line);
+  }
+  .site-topbar-inner{
+    max-width:1180px;height:68px;margin:auto;padding:0 20px;
+    display:flex;align-items:center;gap:22px;
+  }
+  .site-logo{display:flex;align-items:center;gap:10px;min-width:max-content;text-decoration:none;color:var(--brand-ink)}
+  .site-logo img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:center 16%;border:2px solid #dce9d8}
+  .site-logo strong{font-family:"Zen Old Mincho",serif;font-size:20px}
+  .site-logo small{display:block;font-size:7px;letter-spacing:.17em;color:#8d8a83;font-weight:800}
+  .site-main-nav{margin-left:auto;display:flex;gap:20px;font-size:10px;font-weight:800}
+  .site-main-nav a{text-decoration:none;color:#45413c}
+  .site-main-nav a:first-child{color:var(--brand-green)}
+  .site-main-nav a:hover{color:var(--brand-green)}
+  .site-portal-link{font-size:9px;font-weight:800;text-decoration:none;color:#fff;background:var(--brand-green);padding:9px 13px;border-radius:999px}
+  .wrap{max-width:1180px;padding:0 20px 44px}
+  header.brand-hero{
+    padding:34px 0 26px;text-align:left;
+    display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:18px;align-items:stretch;
+  }
+  .brand-hero-main{
+    position:relative;min-height:430px;overflow:hidden;border-radius:28px;box-shadow:var(--brand-shadow);
+    background:#eaf1e7;
+  }
+  .brand-hero-main .hero-photo-wrap{position:absolute;inset:0;margin:0;border-radius:0;box-shadow:none}
+  .brand-hero-main .hero-photo{width:100%;height:100%;object-fit:cover;object-position:center 48%}
+  .brand-hero-main::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(251,250,246,.98),rgba(251,250,246,.90) 47%,rgba(251,250,246,.16) 78%,rgba(251,250,246,.04));
+  }
+  .brand-hero-copy{position:relative;z-index:2;padding:44px 42px;max-width:650px}
+  .brand-kicker{font-size:8px;font-weight:900;letter-spacing:.17em;color:var(--brand-green);margin:0 0 10px}
+  .brand-hero h1{font-family:"Zen Old Mincho",serif;font-size:43px;line-height:1.48;margin:0 0 14px;letter-spacing:.01em}
+  .brand-hero h1 em{font-style:normal;color:var(--brand-green)}
+  .brand-hero .lead{margin:0;color:#615d56;font-size:13px;line-height:1.95;max-width:560px}
+  .brand-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .brand-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:999px;font-size:10px;font-weight:800;text-decoration:none}
+  .brand-actions .primary{background:var(--brand-green);color:#fff;box-shadow:0 10px 24px rgba(95,143,98,.22)}
+  .brand-actions .secondary{background:#fff;border:1px solid #d9e2d6;color:#3f653f}
+  .brand-hero-side{display:grid;gap:12px}
+  .brand-profile,.brand-check{
+    border-radius:24px;padding:18px;background:#fff;border:1px solid var(--brand-line);box-shadow:var(--brand-shadow)
+  }
+  .brand-profile{display:grid;grid-template-columns:108px 1fr;gap:14px;align-items:center}
+  .brand-profile img{width:108px;height:132px;border-radius:18px;object-fit:cover;object-position:center 18%}
+  .brand-profile small,.brand-check small{font-size:8px;color:var(--brand-green);font-weight:900;letter-spacing:.08em}
+  .brand-profile strong{display:block;font-family:"Zen Old Mincho",serif;font-size:18px;margin:3px 0 5px}
+  .brand-profile p,.brand-check p{font-size:8.5px;line-height:1.7;color:#736f68;margin:0}
+  .brand-check{background:linear-gradient(135deg,#f3f8f0,#e2eddd)}
+  .brand-check strong{display:block;font-family:"Zen Old Mincho",serif;font-size:18px;margin:3px 0 5px}
+  .brand-step-rail{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .brand-step-rail a{
+    display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:center;
+    min-height:74px;padding:10px 12px;border:1px solid var(--brand-line);border-radius:16px;background:#fff;
+    box-shadow:0 5px 16px rgba(58,53,45,.06);text-decoration:none;color:var(--brand-ink)
+  }
+  .brand-step-rail span:first-child{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--brand-green-soft);color:var(--brand-green);font-weight:900}
+  .brand-step-rail b{display:block;font-size:10px}.brand-step-rail small{display:block;font-size:7.5px;color:#89857e}
+  .app-column{max-width:820px;margin:0 auto}
+  .app-column .journey-card,.app-column .guide-card,.app-column .search-card,.app-column .money-card,.app-column .summary-card,.app-column .gauge-card,.app-column .checklist{
+    border-radius:18px;box-shadow:0 8px 24px rgba(58,53,45,.07);
+  }
+  .step-label{color:var(--brand-green-dark);font-weight:800}.step-label .num{background:var(--brand-green);color:#fff}
+  .search-row button,.guide-start-btn{background:var(--brand-green)!important;color:#fff!important}
+  .bottom-nav{border-top-color:var(--brand-line)!important;background:rgba(255,255,255,.96)!important;backdrop-filter:blur(14px)}
+  footer{font-size:.72rem!important;color:var(--brand-sub)!important}
+  @media(max-width:900px){
+    .site-main-nav{display:none}.site-portal-link{margin-left:auto}
+    header.brand-hero{grid-template-columns:1fr}.brand-hero-main{min-height:400px}.brand-hero h1{font-size:37px}
+    .brand-step-rail{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:620px){
+    .site-topbar-inner{height:62px;padding:0 12px}.site-logo img{width:38px;height:38px}.site-logo strong{font-size:16px}.site-logo small{display:none}.site-portal-link{font-size:8px;padding:8px 10px}
+    .wrap{padding:0 12px 34px}
+    header.brand-hero{padding:16px 0 18px;gap:9px}
+    .brand-hero-main{min-height:480px;border-radius:20px}
+    .brand-hero-main .hero-photo{object-position:65% 50%}
+    .brand-hero-main::after{background:linear-gradient(180deg,rgba(251,250,246,.97),rgba(251,250,246,.92) 52%,rgba(251,250,246,.42) 78%,rgba(251,250,246,.10))}
+    .brand-hero-copy{padding:28px 20px}.brand-hero h1{font-size:31px;line-height:1.5}.brand-hero .lead{font-size:11px}
+    .brand-actions{display:grid;grid-template-columns:1fr 1fr}.brand-actions a{font-size:9px;padding:0 8px}
+    .brand-hero-side{grid-template-columns:1fr}.brand-profile{grid-template-columns:78px 1fr;padding:12px}.brand-profile img{width:78px;height:92px}.brand-profile strong,.brand-check strong{font-size:15px}.brand-profile p,.brand-check p{font-size:7.5px}.brand-check{display:none}
+    .brand-step-rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding-bottom:2px;scrollbar-width:none}.brand-step-rail::-webkit-scrollbar{display:none}.brand-step-rail a{flex:0 0 180px;scroll-snap-align:start}
+    .app-column{max-width:none}.money-grid{grid-template-columns:1fr}.search-row{flex-direction:column}.search-row button{width:100%}
+  }
+
 </style>
 </head>
 <body>
+<div class="site-topbar">
+  <div class="site-topbar-inner">
+    <a class="site-logo" href="https://hiroai02.github.io/land-risk-view/">
+      <img src="https://hiroai02.github.io/assets/hero-misaki.jpg" alt="みさき">
+      <span><strong>おうち探しノート</strong><small>OUCHI SAGASHI NOTE</small></span>
+    </a>
+    <nav class="site-main-nav">
+      <a href="#journeyCard">ホーム</a>
+      <a href="#landSection">土地選び</a>
+      <a href="#moneySection">家づくり</a>
+      <a href="#savedLandsCard">比較</a>
+      <a href="#myPageSection">マイページ</a>
+    </nav>
+    <a class="site-portal-link" href="https://hiroai02.github.io/links/">リンクまとめ →</a>
+  </div>
+</div>
 
 <svg style="display:none" aria-hidden="true">
   <symbol id="i-droplets" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1080,15 +1198,39 @@
 
 <div class="wrap">
 
-  <header>
+  <header class="brand-hero">
+  <div class="brand-hero-main">
     <div class="hero-photo-wrap">
-      <img class="hero-photo" src="hero-house.jpg" alt="青空の下に建つ木目調の外観の一戸建て住宅(AI生成イメージ)" width="1400" height="551" loading="eager">
+      <img class="hero-photo" src="hero-house.jpg" alt="明るい住宅イメージ" width="1400" height="551" loading="eager">
     </div>
-    <div class="hero-credit">AI生成イメージ(Dreamina)</div>
-    <span class="badge">無料・登録不要</span>
-    <h1>おうち探しノート</h1>
-    <p class="lead">新築の土地選びから引っ越し後の暮らしまで、一歩ずつ。まずは住所を入れるだけで、その場所の防災ハザード(洪水・土砂災害・津波・高潮)を国の公式データで確認できます。</p>
-  </header>
+    <div class="brand-hero-copy">
+      <p class="brand-kicker">MISAKI'S HOME GUIDE</p>
+      <h1>理想の暮らしは、<br><em>きっと見つかる。</em></h1>
+      <p class="lead">土地選びから家づくり、引っ越し、その先の暮らしまで。まずは住所から、防災リスクを国の公式データで確認できます。</p>
+      <div class="brand-actions">
+        <a class="primary" href="#landSection">土地を確認する →</a>
+        <a class="secondary" href="#journeyCard">はじめ方を見る →</a>
+      </div>
+    </div>
+  </div>
+
+  <aside class="brand-hero-side">
+    <div class="brand-profile">
+      <img src="https://hiroai02.github.io/assets/hero-misaki.jpg" alt="みさき">
+      <div><small>GUIDE</small><strong>みさきと一緒に<br>はじめるおうちづくり</strong><p>土地選びから購入後まで、次にやることを分かりやすく整理します。</p></div>
+    </div>
+    <div class="brand-check"><small>CHECK LIST</small><strong>後悔しないための<br>確認ポイント</strong><p>費用・土地・会社比較・引っ越しまで、同じページで管理できます。</p></div>
+  </aside>
+
+  <nav class="brand-step-rail">
+    <a href="#landSection"><span>1</span><span><b>土地選び</b><small>防災・候補地を確認</small></span><i>›</i></a>
+    <a href="#moneySection"><span>2</span><span><b>家づくり</b><small>費用・住宅会社を整理</small></span><i>›</i></a>
+    <a href="#savedLandsCard"><span>3</span><span><b>比較</b><small>候補を並べて確認</small></span><i>›</i></a>
+    <a href="#myPageSection"><span>4</span><span><b>暮らし準備</b><small>引っ越し・購入リスト</small></span><i>›</i></a>
+  </nav>
+</header>
+
+  <div class="app-column">
 
   <div class="journey-card" id="journeyCard"></div>
 
@@ -1313,6 +1455,8 @@
     <p class="money-lead">タップするたびに状態が切り替わります(未設定→必要→欲しい→後で買う→不要→購入済み)。端末に保存されます。</p>
     <div id="purchaseList"></div>
     </div></div>
+  </div>
+
   </div>
 
   <footer>
