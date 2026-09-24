@@ -1012,6 +1012,8 @@
   }
 
   /* ---------- Misaki brand / responsive shell override ---------- */
+  .brand-house-model{position:absolute;right:30px;bottom:28px;z-index:3;width:120px;height:100px;border-radius:22px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);box-shadow:0 14px 35px rgba(58,53,45,.13);display:grid;place-items:center;color:#5f8f62;transform:rotate(2deg)}
+  .brand-house-model span{font:700 48px "Zen Old Mincho",serif;line-height:1}.brand-house-model small{position:absolute;bottom:9px;font-size:7px;font-weight:900;letter-spacing:.14em;color:#7d8b78}
   :root {
     --brand-bg:#fbfaf6;
     --brand-paper:#ffffff;
@@ -1052,11 +1054,8 @@
     background:#eaf1e7;
   }
   .brand-hero-main .hero-photo-wrap{position:absolute;inset:0;margin:0;border-radius:0;box-shadow:none}
-  .brand-hero-main .hero-photo{width:100%;height:100%;object-fit:cover;object-position:center 48%}
-  .brand-hero-main::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,rgba(251,250,246,.98),rgba(251,250,246,.90) 47%,rgba(251,250,246,.16) 78%,rgba(251,250,246,.04));
-  }
+  .brand-hero-main .hero-photo{width:100%;height:100%;object-fit:cover;object-position:64% 28%;filter:saturate(1.04) brightness(1.03)}
+  .brand-hero-main::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(251,250,246,.99),rgba(251,250,246,.94) 43%,rgba(251,250,246,.25) 70%,rgba(251,250,246,.03))}
   .brand-hero-copy{position:relative;z-index:2;padding:44px 42px;max-width:650px}
   .brand-kicker{font-size:8px;font-weight:900;letter-spacing:.17em;color:var(--brand-green);margin:0 0 10px}
   .brand-hero h1{font-family:"Zen Old Mincho",serif;font-size:43px;line-height:1.48;margin:0 0 14px;letter-spacing:.01em}
@@ -1103,7 +1102,7 @@
     .wrap{padding:0 12px 34px}
     header.brand-hero{padding:16px 0 18px;gap:9px}
     .brand-hero-main{min-height:480px;border-radius:20px}
-    .brand-hero-main .hero-photo{object-position:65% 50%}
+    .brand-hero-main .hero-photo{object-position:70% 20%}.brand-house-model{width:92px;height:78px;right:14px;bottom:14px}.brand-house-model span{font-size:38px}
     .brand-hero-main::after{background:linear-gradient(180deg,rgba(251,250,246,.97),rgba(251,250,246,.92) 52%,rgba(251,250,246,.42) 78%,rgba(251,250,246,.10))}
     .brand-hero-copy{padding:28px 20px}.brand-hero h1{font-size:31px;line-height:1.5}.brand-hero .lead{font-size:11px}
     .brand-actions{display:grid;grid-template-columns:1fr 1fr}.brand-actions a{font-size:9px;padding:0 8px}
@@ -1201,9 +1200,9 @@
   <header class="brand-hero">
   <div class="brand-hero-main">
     <div class="hero-photo-wrap">
-      <img class="hero-photo" src="hero-house.jpg" alt="明るい住宅イメージ" width="1400" height="551" loading="eager">
+      <img class="hero-photo" src="https://hiroai02.github.io/assets/hero-misaki.jpg" alt="おうち探しを案内するみさき" width="1400" height="551" loading="eager">
     </div>
-    <div class="brand-hero-copy">
+    <div class="brand-house-model" aria-hidden="true"><span>⌂</span><small>MY HOME</small></div><div class="brand-hero-copy">
       <p class="brand-kicker">MISAKI'S HOME GUIDE</p>
       <h1>理想の暮らしは、<br><em>きっと見つかる。</em></h1>
       <p class="lead">土地選びから家づくり、引っ越し、その先の暮らしまで。まずは住所から、防災リスクを国の公式データで確認できます。</p>
